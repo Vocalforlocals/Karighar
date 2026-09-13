@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Karighar (कारीघर)
 ### AI-Driven Market Linkage & Smart Cataloging Mobile Application for Marginalized Artisans
 **Smart India Hackathon 2026 | Problem Statement #26090**  
@@ -185,3 +186,7 @@ vishawakala/
 - **Problem Statement**: #26090 — AI-Driven Market Linkage & Smart Cataloging for Marginalized Artisans
 - **Organization**: Ministry of Social Justice and Empowerment (MoSJE)
 - **Status**: Production-Ready, Zero Static Warnings, 100% Verified.
+=======
+# Karighar
+A technology-driven platform for empowering artisans, preserving traditional craftsmanship, and creating sustainable market opportunities.
+>>>>>>> 4ea293724e2b60324052467ebd4b14a2f1fa90d4
