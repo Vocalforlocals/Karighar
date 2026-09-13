@@ -1,0 +1,27 @@
+[req]
+default_bits       = 2048
+prompt             = no
+default_md         = sha256
+distinguished_name = dn
+x509_extensions    = v3_req
+
+[dn]
+C  = IN
+ST = Uttar Pradesh
+L  = Varanasi
+O  = Karighar MoSJE Trust
+OU = Digital Craft Authentication
+CN = localhost
+
+[v3_req]
+subjectAltName = @alt_names
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = *.localhost
+IP.1  = 127.0.0.1
+IP.2  = 10.63.63.42
+IP.3  = 10.246.49.42

@@ -1,0 +1,12 @@
+{
+  "name": "karighar-backend",
+  "version": "1.0.0",
+  "description": "Karighar Full-Stack REST & WebSocket Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
