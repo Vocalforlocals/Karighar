@@ -1,0 +1,14 @@
+﻿{
+  "name": "karighar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Karighar (कारीघर) — AI-Augmented Operating System for Indian Artisans",
+  "scripts": {
+    "build": "node -e \"console.log('Using pre-compiled Flutter Web release bundle in build/web')\"",
+    "start": "node serve_flutter.js",
+    "test": "node scripts/test_api.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

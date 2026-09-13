@@ -1143,34 +1143,6 @@ async function handleSecureRequest(req, res) {
 // 1. Primary Secure HTTPS Server (Port 8443)
 // ==============================================================================
 const httpsServer = https.createServer(sslOptions, handleSecureRequest);
-
-httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
-  const ifaces = os.networkInterfaces();
-  const lanIps = [];
-  for (const name in ifaces) {
-    for (const iface of ifaces[name]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        lanIps.push(iface.address);
-      }
-    }
-  }
-
-  console.log(`================================================================`);
-  console.log(` 🔒 Karighar (कारीघर) — Secure Full-Stack HTTPS Server`);
-  console.log(` Smart India Hackathon 2026 | MoSJE Problem Statement #26090`);
-  console.log(`================================================================`);
-  console.log(` 🛡️  Desktop Localhost: https://localhost:${HTTPS_PORT}`);
-  lanIps.forEach(ip => {
-    console.log(` 📱 Phone / LAN URL:   https://${ip}:${HTTPS_PORT}`);
-  });
-  console.log(` 🌐 Secure REST API:   https://localhost:${HTTPS_PORT}/api/v1/health`);
-  console.log(` ⚡ Secure TLS SSE:    https://localhost:${HTTPS_PORT}/api/sync/events`);
-  console.log(`================================================================`);
-});
-
-// ==============================================================================
-// 2. HTTP Ingress Server (Port 8080) with Automatic HTTPS Redirect
-// ==============================================================================
 const httpServer = http.createServer((req, res) => {
   const host = (req.headers.host || 'localhost').split(':')[0];
   const targetHttpsUrl = `https://${host}:${HTTPS_PORT}${req.url}`;
@@ -1182,6 +1154,34 @@ const httpServer = http.createServer((req, res) => {
   res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${targetHttpsUrl}"></head><body><h1>301 Moved Permanently</h1><p>Redirecting to secure TLS endpoint: <a href="${targetHttpsUrl}">${targetHttpsUrl}</a></p></body></html>`);
 });
 
-httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
-  console.log(` 🔄 HTTP Ingress (8080) active: Auto-redirecting all traffic to HTTPS (${HTTPS_PORT})`);
-});
+if (require.main === module) {
+  httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+    const ifaces = os.networkInterfaces();
+    const lanIps = [];
+    for (const name in ifaces) {
+      for (const iface of ifaces[name]) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          lanIps.push(iface.address);
+        }
+      }
+    }
+
+    console.log(`================================================================`);
+    console.log(` 🔒 Karighar (कारीघर) — Secure Full-Stack HTTPS Server`);
+    console.log(` Smart India Hackathon 2026 | MoSJE Problem Statement #26090`);
+    console.log(`================================================================`);
+    console.log(` 🛡️  Desktop Localhost: https://localhost:${HTTPS_PORT}`);
+    lanIps.forEach(ip => {
+      console.log(` 📱 Phone / LAN URL:   https://${ip}:${HTTPS_PORT}`);
+    });
+    console.log(` 🌐 Secure REST API:   https://localhost:${HTTPS_PORT}/api/v1/health`);
+    console.log(` ⚡ Secure TLS SSE:    https://localhost:${HTTPS_PORT}/api/sync/events`);
+    console.log(`================================================================`);
+  });
+
+  httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
+    console.log(` 🔄 HTTP Ingress (8080) active: Auto-redirecting all traffic to HTTPS (${HTTPS_PORT})`);
+  });
+}
+
+module.exports = { handleSecureRequest, httpsServer, httpServer };
