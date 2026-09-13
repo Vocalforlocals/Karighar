@@ -1,6 +1,5 @@
 ﻿{
   "version": 2,
-  "outputDirectory": "build/web",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
@@ -30,7 +29,7 @@
       ]
     },
     {
-      "source": "/(?:assets/(.*)|favicon\\.(?:png|ico)|main\\.dart\\.js)",
+      "source": "/(?:assets/(.*)|canvaskit/(.*)|icons/(.*)|favicon\\.(?:png|ico)|main\\.dart\\.js)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
       ]
