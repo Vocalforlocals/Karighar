@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 function copyDir(src, dest) {
@@ -23,4 +23,9 @@ if (fs.existsSync('build/web')) {
   console.log('✅ public/ directory already present');
 } else {
   console.warn('⚠️ Neither build/web nor public found');
+}
+
+if (fs.existsSync('public/index.html')) {
+  fs.copyFileSync('public/index.html', 'index.html');
+  console.log('✅ Synchronized root index.html');
 }

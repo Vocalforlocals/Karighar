@@ -15,16 +15,18 @@ class TokenBucketRateLimiter {
       STANDARD: { limit: 150, windowMs: 60 * 1000 }
     };
 
-    // Garbage collection every 5 minutes to prevent memory leaks
-    setInterval(() => this.cleanup(), 5 * 60 * 1000);
+    // Garbage collection every 5 minutes to prevent memory leaks (unref ensures serverless runtimes do not hang)
+    const cleanupTimer = setInterval(() => this.cleanup(), 5 * 60 * 1000);
+    if (cleanupTimer.unref) cleanupTimer.unref();
   }
 
   getClientIp(req) {
-    const forwarded = req.headers['x-forwarded-for'];
+    if (!req) return '127.0.0.1';
+    const forwarded = req.headers && req.headers['x-forwarded-for'];
     if (forwarded) {
       return forwarded.split(',')[0].trim();
     }
-    return req.socket.remoteAddress || '127.0.0.1';
+    return (req.socket && req.socket.remoteAddress) || req.ip || '127.0.0.1';
   }
 
   getProfileType(pathname) {

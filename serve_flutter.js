@@ -46,10 +46,13 @@ if (!fs.existsSync(KEY_FILE) || !fs.existsSync(CERT_FILE)) {
   }
 }
 
-const sslOptions = {
-  key: fs.readFileSync(KEY_FILE),
-  cert: fs.readFileSync(CERT_FILE)
-};
+let sslOptions = {};
+if (fs.existsSync(KEY_FILE) && fs.existsSync(CERT_FILE)) {
+  sslOptions = {
+    key: fs.readFileSync(KEY_FILE),
+    cert: fs.readFileSync(CERT_FILE)
+  };
+}
 
 // MIME types for static Flutter Web assets
 const MIME_TYPES = {
@@ -1142,7 +1145,7 @@ async function handleSecureRequest(req, res) {
 // ==============================================================================
 // 1. Primary Secure HTTPS Server (Port 8443)
 // ==============================================================================
-const httpsServer = https.createServer(sslOptions, handleSecureRequest);
+const httpsServer = (sslOptions.key && sslOptions.cert) ? https.createServer(sslOptions, handleSecureRequest) : null;
 const httpServer = http.createServer((req, res) => {
   const host = (req.headers.host || 'localhost').split(':')[0];
   const targetHttpsUrl = `https://${host}:${HTTPS_PORT}${req.url}`;
@@ -1155,7 +1158,8 @@ const httpServer = http.createServer((req, res) => {
 });
 
 if (require.main === module) {
-  httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+  if (httpsServer) {
+    httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
     const ifaces = os.networkInterfaces();
     const lanIps = [];
     for (const name in ifaces) {
@@ -1177,7 +1181,8 @@ if (require.main === module) {
     console.log(` 🌐 Secure REST API:   https://localhost:${HTTPS_PORT}/api/v1/health`);
     console.log(` ⚡ Secure TLS SSE:    https://localhost:${HTTPS_PORT}/api/sync/events`);
     console.log(`================================================================`);
-  });
+    });
+  }
 
   httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
     console.log(` 🔄 HTTP Ingress (8080) active: Auto-redirecting all traffic to HTTPS (${HTTPS_PORT})`);
