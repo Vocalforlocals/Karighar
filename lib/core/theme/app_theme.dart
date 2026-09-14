@@ -17,8 +17,19 @@ class AppColors {
   static const Color gold = Color(0xFFD97706);
   static const Color goldLight = Color(0xFFFFFBEB);
 
+  // Artisanal Luxury & Provenance Palette (Flipkart/Etsy Benchmark)
+  static const Color terracotta = Color(0xFFD9531E);
+  static const Color terracottaLight = Color(0xFFFEECE4);
+  static const Color royalIndigo = Color(0xFF1A2B4C);
+  static const Color royalIndigoDark = Color(0xFF0F1A2E);
+  static const Color royalIndigoLight = Color(0xFFE9EDF5);
+  static const Color zariGold = Color(0xFFD97706);
+  static const Color zariGoldLight = Color(0xFFFEF3C7);
+  static const Color emeraldDeep = Color(0xFF0D6E6E);
+
   // Warm Artisanal Parchment & Silk Canvas
   static const Color background = Color(0xFFFAF7F2);
+  static const Color parchmentSilk = Color(0xFFFAF7F2);
   static const Color surface = Colors.white;
   static const Color surfaceWarm = Color(0xFFFBF8F3);
   static const Color surfaceDark = Color(0xFF1C1917);

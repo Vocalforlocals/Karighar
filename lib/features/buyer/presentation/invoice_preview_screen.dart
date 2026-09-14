@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/invoice_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
@@ -31,11 +30,6 @@ class InvoicePreviewScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'GST & DBT Tax Invoice',
-        showBackButton: true,
-        currentRole: 'buyer',
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

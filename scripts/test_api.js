@@ -4,8 +4,28 @@
 // Smart India Hackathon 2026 | MoSJE Problem Statement #26090
 // ==============================================================================
 
+const fs = require('fs');
+const path = require('path');
 const https = require('https');
 const http = require('http');
+
+// Lightweight Native .env loader
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  try {
+    for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        const k = trimmed.substring(0, idx).trim();
+        const v = trimmed.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+        if (!process.env[k]) process.env[k] = v;
+      }
+    }
+  } catch (_) {}
+}
+
 const { signWebhookPayload } = require('../backend/middleware/webhook_security');
 
 const HTTPS_PORT = 8443;
@@ -473,6 +493,62 @@ async function runTests() {
     const sample = res.data.auditLogs[0];
     if (!sample.id || !sample.action || !sample.integrityHash || !sample.previousHash) {
       throw new Error('Audit log record missing required CERT-In hash-chaining fields');
+    }
+  });
+
+  // 27. Phase 4: Atomic 15-Minute Soft-Lock Stock Reservation
+  await test('Buyer API POST /api/v1/buyer/reserve-stock reserves inventory with 15-min TTL', async () => {
+    const res = await secureRequest('POST', '/api/v1/buyer/reserve-stock', {
+      items: [{ productId: 'prod_01', quantity: 1 }],
+      buyerSessionId: 'test_sess_9041'
+    });
+    if (res.status !== 200 || !res.data.success || res.data.ttlSeconds !== 900 || !res.data.reservationId) {
+      throw new Error(`Stock reservation failed: status ${res.status}`);
+    }
+  });
+
+  // 28. Phase 5: Payment Order & UPI Intent Creation
+  await test('Buyer API POST /api/v1/buyer/payment/create-order generates UPI Intent & QR payload', async () => {
+    const res = await secureRequest('POST', '/api/v1/buyer/payment/create-order', {
+      orderId: 'ORD-TEST-9041',
+      productId: 'prod_01',
+      title: 'Varanasi Pure Katan Silk Zari Brocade Saree',
+      amount: 12999,
+      paymentMethod: 'UPI_INTENT',
+      upiProvider: 'GPAY'
+    });
+    if (res.status !== 200 || !res.data.success || !res.data.upiIntentUrl?.startsWith('upi://') || !res.data.qrPayload) {
+      throw new Error(`UPI order creation failed: status ${res.status}`);
+    }
+  });
+
+  // 29. Phase 5: Payment Webhook Verification & Escrow Settlement
+  await test('Buyer API POST /api/v1/buyer/payment/verify-webhook settles order into escrow_funded', async () => {
+    const res = await secureRequest('POST', '/api/v1/buyer/payment/verify-webhook', {
+      orderId: 'ORD-TEST-9041',
+      transactionId: 'TXN_TEST_9981'
+    });
+    if (res.status !== 200 || !res.data.success || res.data.status !== 'escrow_funded') {
+      throw new Error(`Payment webhook verification failed: status ${res.status}`);
+    }
+  });
+
+  // 30. Phase 6: Live 6-Stage Courier Delivery Tracking & Provenance Passport
+  await test('Buyer API GET /api/v1/buyer/track/:orderId returns 6-stage timeline and provenance passport', async () => {
+    const res = await secureRequest('GET', '/api/v1/buyer/track/ORD-TEST-9041');
+    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.trackingStages) || res.data.trackingStages.length !== 6 || !res.data.provenancePassport?.sha256Hash) {
+      throw new Error(`Tracking retrieval failed: status ${res.status}`);
+    }
+  });
+
+  // 31. Phase 2: Google Gemini Multimodal Craft Lens (Visual Search)
+  await test('AI POST /api/v1/ai/gemini-lens identifies craft form and matches catalog products', async () => {
+    const res = await secureRequest('POST', '/api/v1/ai/gemini-lens', {
+      imageBase64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      mimeType: 'image/png'
+    });
+    if (res.status !== 200 || !res.data.success || !res.data.detectedCraft?.craftForm || !Array.isArray(res.data.matchedProducts)) {
+      throw new Error(`Gemini Craft Lens failed: status ${res.status}`);
     }
   });
 

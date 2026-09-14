@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../bloc/buyer_bloc.dart';
@@ -41,11 +40,6 @@ class _ArCraftViewerScreenState extends State<ArCraftViewerScreen> {
 
         return Scaffold(
           backgroundColor: const Color(0xFF0F172A),
-          appBar: VKAppBar(
-            title: 'AR 3D Craft Room Viewer',
-            showBackButton: true,
-            currentRole: 'buyer',
-          ),
           body: Stack(
             children: [
               // Living Room Camera Simulation Background

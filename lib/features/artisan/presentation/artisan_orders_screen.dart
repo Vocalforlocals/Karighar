@@ -1,8 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_card.dart';
 import '../bloc/artisan_bloc.dart';
@@ -14,11 +13,6 @@ class ArtisanOrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'Loom Orders',
-        showBackButton: true,
-        currentRole: 'artisan',
-      ),
       body: BlocBuilder<ArtisanBloc, ArtisanState>(
         builder: (context, state) {
           return ListView.separated(

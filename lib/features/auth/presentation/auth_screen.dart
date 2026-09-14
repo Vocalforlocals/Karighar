@@ -428,41 +428,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               child: ValueListenableBuilder<AppLanguage>(
                 valueListenable: LocaleManager.currentLanguage,
                 builder: (context, currentLang, _) {
-                  return PopupMenuButton<AppLanguage>(
-                    tooltip: 'Change Language'.tr,
-                    offset: const Offset(0, 40),
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    onSelected: (lang) {
-                      LocaleManager.setLanguage(lang);
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () async {
+                      LocaleManager.showLanguagePicker(context);
                       if (mounted) setState(() {});
                     },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: AppLanguage.english,
-                        child: Row(
-                          children: [
-                            Text('🇬🇧  English (EN)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: AppLanguage.hindi,
-                        child: Row(
-                          children: [
-                            Text('🇮🇳  हिंदी (Hindi)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: AppLanguage.tamil,
-                        child: Row(
-                          children: [
-                            Text('🇮🇳  தமிழ் (Tamil)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                    ],
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(

@@ -40,7 +40,7 @@ class VKAppBar extends StatelessWidget implements PreferredSizeWidget {
                     if (context.canPop()) {
                       context.pop();
                     } else {
-                      context.go('/role-selection');
+                      context.go('/buyer');
                     }
                   },
                 )
@@ -104,32 +104,31 @@ class VKAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: () => VKGuidedTourModal.show(context),
             ),
 
-            // Instant Language Selector
-            PopupMenuButton<AppLanguage>(
-              icon: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            // Instant Language Selector (22 Indian Languages + Bihari Dialects)
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => LocaleManager.showLanguagePicker(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.cardBorder),
                   borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.language_rounded, size: 14, color: AppColors.teal),
+                    const Icon(Icons.language_rounded, size: 15, color: AppColors.teal),
                     const SizedBox(width: 4),
                     Text(
                       LocaleManager.getLanguageLabel(currentLang),
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
+                    const SizedBox(width: 2),
+                    const Icon(Icons.arrow_drop_down_rounded, size: 14, color: AppColors.textSecondary),
                   ],
                 ),
               ),
-              onSelected: (lang) => LocaleManager.setLanguage(lang),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: AppLanguage.english, child: Text('English (EN)')),
-                PopupMenuItem(value: AppLanguage.hindi, child: Text('हिंदी (Hindi)')),
-                PopupMenuItem(value: AppLanguage.tamil, child: Text('தமிழ் (Tamil)')),
-              ],
             ),
             const SizedBox(width: 6),
 
@@ -181,7 +180,7 @@ class VKAppBar extends StatelessWidget implements PreferredSizeWidget {
                     context.go('/admin');
                     break;
                   case 'switch':
-                    context.go('/role-selection');
+                    context.go('/buyer/profile');
                     break;
                 }
               },

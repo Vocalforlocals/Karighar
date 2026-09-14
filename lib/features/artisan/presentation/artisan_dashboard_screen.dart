@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/api_client.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
@@ -18,10 +17,6 @@ class ArtisanDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'Artisan Studio',
-        currentRole: 'artisan',
-      ),
       floatingActionButton: const VKConversationalMic(),
       body: ValueListenableBuilder<AppLanguage>(
         valueListenable: LocaleManager.currentLanguage,
@@ -38,10 +33,6 @@ class ArtisanDashboardScreen extends StatelessWidget {
                   children: [
                     // Profile Banner
                     _buildProfileBanner(context),
-                    const SizedBox(height: 16),
-
-                    // Hero AI Studio Callout
-                    _buildStudioBanner(context),
                     const SizedBox(height: 16),
 
                     // Metrics Grid
@@ -120,105 +111,8 @@ class ArtisanDashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-
-                    // Institutional B2B Cluster Pooling Card
-                    InkWell(
-                      onTap: () => context.go('/artisan/cluster-pooling'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: VKCard(
-                        color: AppColors.tealLight.withValues(alpha: 0.35),
-                        borderColor: AppColors.teal.withValues(alpha: 0.4),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: const BoxDecoration(
-                                color: AppColors.teal,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.corporate_fare_rounded, color: Colors.white, size: 22),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Institutional B2B Cluster Pooling'.tr,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: AppColors.tealDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Pool loom capacity for FabIndia & Taj Hotels bulk tenders with guaranteed MoSJE DBT fair wages.'.tr,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                      height: 1.25,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.teal),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Phase 6 Karighar Credit Working Capital Loan Card
-                    InkWell(
-                      onTap: () => context.go('/artisan/credit'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: VKCard(
-                        color: AppColors.saffronLight.withValues(alpha: 0.35),
-                        borderColor: AppColors.saffron.withValues(alpha: 0.4),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: const BoxDecoration(
-                                color: AppColors.saffron,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 22),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'PM-Vishwakarma Karighar Credit Hub'.tr,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: AppColors.saffronDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Pre-approved ₹1,00,000 collateral-free working capital loan based on loom fulfillment score.'.tr,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                      height: 1.25,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.saffron),
-                          ],
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 20),
+
 
                     // Recent Orders List
                     Row(
@@ -484,105 +378,6 @@ class ArtisanDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStudioBanner(BuildContext context) {
-    return InkWell(
-      onTap: () => context.go('/artisan/add-product'),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.35),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
-          border: Border.all(color: AppColors.saffron.withValues(alpha: 0.4), width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: AppColors.saffronGradient,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: AppColors.saffronGlow,
-              ),
-              child: const Icon(Icons.auto_fix_high_rounded, color: Colors.white, size: 26),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          'Launch AI Studio Wizard'.tr,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                        decoration: BoxDecoration(
-                          color: AppColors.saffron.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.saffron.withValues(alpha: 0.5), width: 0.8),
-                        ),
-                        child: Text(
-                          '4K AI'.tr,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Photograph loom craft, speak description in Hindi, get 4K enhancement & MoSJE pricing.'.tr,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 11,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildMetricCard({
     required String title,

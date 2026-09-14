@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vishwakala/core/widgets/vk_app_bar.dart';
@@ -17,11 +19,62 @@ import 'package:vishwakala/features/artisan/presentation/studio_wizard_screen.da
 import 'package:vishwakala/features/auth/presentation/auth_screen.dart';
 import 'package:vishwakala/features/error/presentation/not_found_screen.dart';
 import 'package:vishwakala/features/buyer/bloc/buyer_bloc.dart';
-import 'package:vishwakala/features/chat/presentation/chat_negotiation_screen.dart';
+import 'package:vishwakala/features/buyer/presentation/buyer_explore_screen.dart';
+import 'package:vishwakala/features/buyer/presentation/buyer_stories_screen.dart';
+import 'package:vishwakala/features/buyer/presentation/buyer_profile_screen.dart';
+import 'package:vishwakala/features/buyer/presentation/buyer_quotes_screen.dart';
 import 'package:vishwakala/features/buyer/presentation/rfp_tender_board_screen.dart';
 import 'package:vishwakala/main.dart';
 
+// Mock HttpOverrides for NetworkImage in Widget Tests
+final List<int> _transparentPng = <int>[
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+];
+
+class _MockHttpClientResponse extends Fake implements HttpClientResponse {
+  @override
+  int get statusCode => 200;
+  @override
+  int get contentLength => _transparentPng.length;
+  @override
+  HttpClientResponseCompressionState get compressionState => HttpClientResponseCompressionState.notCompressed;
+  @override
+  StreamSubscription<List<int>> listen(void Function(List<int>)? onData, {Function? onError, void Function()? onDone, bool? cancelOnError}) {
+    return Stream<List<int>>.value(_transparentPng).listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  }
+}
+
+class _MockHttpClientRequest extends Fake implements HttpClientRequest {
+  @override
+  final HttpHeaders headers = _MockHttpHeaders();
+  @override
+  Future<HttpClientResponse> close() async => _MockHttpClientResponse();
+}
+
+class _MockHttpHeaders extends Fake implements HttpHeaders {}
+
+class _MockHttpClient extends Fake implements HttpClient {
+  @override
+  bool autoUncompress = false;
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async => _MockHttpClientRequest();
+}
+
+class _TestHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) => _MockHttpClient();
+}
+
 void main() {
+  setUpAll(() {
+    HttpOverrides.global = _TestHttpOverrides();
+  });
+
   group('Karighar Frontend Suite', () {
     testWidgets('App root smoke test', (WidgetTester tester) async {
       await tester.pumpWidget(const KarigharApp());
@@ -99,8 +152,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Global Export Clearance'), findsOneWidget);
       expect(find.text('Select Destination Country for Cross-Border Dispatch:'), findsOneWidget);
+      expect(find.text('Declared Value (USD):'), findsOneWidget);
     });
 
     testWidgets('GisClusterMapScreen renders national cluster telemetry radar', (WidgetTester tester) async {
@@ -230,8 +283,8 @@ void main() {
       expect(find.text('EN'), findsOneWidget);
       await tester.tap(find.text('EN'));
       await tester.pumpAndSettle();
-      expect(find.text('🇮🇳  हिंदी (Hindi)'), findsOneWidget);
-      await tester.tap(find.text('🇮🇳  हिंदी (Hindi)'));
+      expect(find.text('हिंदी (Hindi)'), findsOneWidget);
+      await tester.tap(find.text('हिंदी (Hindi)'));
       await tester.pumpAndSettle();
       expect(find.text('हि'), findsOneWidget);
     });
@@ -253,39 +306,33 @@ void main() {
       await tester.pump();
 
       // Check English elements
-      expect(find.text('Launch AI Studio Wizard'), findsOneWidget);
       expect(find.text('Total GMV'), findsOneWidget);
       expect(find.text('Active Orders'), findsOneWidget);
       expect(find.text('Bulk Quotes'), findsOneWidget);
       expect(find.text('GI Compliance'), findsOneWidget);
       expect(find.text('Add Product (AI)'), findsOneWidget);
-      expect(find.text('PM-Vishwakarma Karighar Credit Hub'), findsOneWidget);
       expect(find.text('Setu Didi (Voice)'), findsOneWidget);
 
       // Switch to Hindi
       LocaleManager.setLanguage(AppLanguage.hindi);
       await tester.pump();
 
-      expect(find.text('एआई स्टूडियो विज़ार्ड शुरू करें'), findsOneWidget);
       expect(find.text('कुल सकल बिक्री'), findsOneWidget);
       expect(find.text('सक्रिय ऑर्डर'), findsOneWidget);
       expect(find.text('थोक मूल्य प्रस्ताव'), findsOneWidget);
       expect(find.text('जीआई अनुपालन'), findsOneWidget);
       expect(find.text('नया उत्पाद जोड़ें (एआई)'), findsOneWidget);
-      expect(find.text('पीएम-विश्वकर्मा कारीघर क्रेडिट हब'), findsOneWidget);
       expect(find.text('सेतु दीदी (आवाज़)'), findsOneWidget);
 
       // Switch to Tamil
       LocaleManager.setLanguage(AppLanguage.tamil);
       await tester.pump();
 
-      expect(find.text('AI கலைக்கூட வழிகாட்டியைத் தொடங்குக'), findsOneWidget);
       expect(find.text('மொத்த விற்பனை'), findsOneWidget);
       expect(find.text('செயலில் உள்ள ஆர்டர்கள்'), findsOneWidget);
       expect(find.text('மொத்த விலை கோரிக்கைகள்'), findsOneWidget);
       expect(find.text('புவிசார் குறியீடு'), findsOneWidget);
       expect(find.text('பொருள் சேர்க்க (AI)'), findsOneWidget);
-      expect(find.text('பிஎம்-விஸ்வகர்மா காரிகர் கிரெடிட் மையம்'), findsOneWidget);
       expect(find.text('சேது தீதி (குரல்)'), findsOneWidget);
 
       // Reset to English
@@ -322,17 +369,9 @@ void main() {
       expect(find.text('Multi-Angle Craft Gallery'), findsOneWidget);
       expect(find.text('Full Craft'), findsOneWidget);
       expect(find.text('4K Super-Resolution'), findsOneWidget);
-      expect(find.text('Run AI Vision Inspection'), findsOneWidget);
-      expect(find.text('Karighar AI Vision Engine (HTTPS 8443)'), findsOneWidget);
-      expect(find.text('Server Angle Verified'), findsOneWidget);
-      expect(find.text('Microscopic Weave Density'), findsOneWidget);
-
-      // Tap Run AI Vision Inspection
-      await tester.ensureVisible(find.text('Run AI Vision Inspection'));
-      await tester.tap(find.text('Run AI Vision Inspection'));
-      await tester.pump();
 
       // Advance to Step 2: Voice Catalog & Audio Recorder
+      await tester.ensureVisible(find.text('Continue (2/4)'));
       await tester.tap(find.text('Continue (2/4)'));
       await tester.pump();
 
@@ -429,17 +468,17 @@ void main() {
       LocaleManager.setLanguage(AppLanguage.english);
     });
 
-    testWidgets('ChatNegotiationScreen and RfpTenderBoardScreen mount and dispose without memory leaks', (WidgetTester tester) async {
-      // 1. Mount ChatNegotiationScreen
+    testWidgets('BuyerQuotesScreen and RfpTenderBoardScreen mount and dispose without memory leaks', (WidgetTester tester) async {
+      // 1. Mount BuyerQuotesScreen
       await tester.pumpWidget(
         const MaterialApp(
-          home: ChatNegotiationScreen(),
+          home: BuyerQuotesScreen(),
         ),
       );
       await tester.pump();
-      expect(find.textContaining('Master Ramdev'), findsAtLeastNWidgets(1));
+      expect(find.byType(BuyerQuotesScreen), findsOneWidget);
 
-      // Dispose ChatNegotiationScreen by unmounting
+      // Dispose BuyerQuotesScreen by unmounting
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
 
@@ -450,11 +489,49 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.textContaining('Institutional B2B Tenders'), findsOneWidget);
+      expect(find.textContaining('Active Procurement Tenders'), findsOneWidget);
 
       // Dispose RfpTenderBoardScreen by unmounting
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
+    });
+
+    testWidgets('Phase 1 Buyer screens mount and render correctly', (WidgetTester tester) async {
+      // 1. Mount BuyerStoriesScreen
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: BuyerStoriesScreen(),
+        ),
+      );
+      await tester.pump();
+      expect(find.textContaining('Master Ramdev Varma'), findsOneWidget);
+      expect(find.textContaining('Smt. Sita Devi'), findsOneWidget);
+
+      // 2. Mount BuyerExploreScreen with BlocProvider
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider(
+            create: (_) => BuyerBloc(),
+            child: const BuyerExploreScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('All Regions'), findsOneWidget);
+      expect(find.text('National GIS Cluster Radar'), findsOneWidget);
+
+      // 3. Mount BuyerProfileScreen
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider(
+            create: (_) => BuyerBloc(),
+            child: const BuyerProfileScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Login as Buyer'), findsAtLeastNWidgets(1));
+      expect(find.text('Login as Seller'), findsOneWidget);
     });
   });
 }

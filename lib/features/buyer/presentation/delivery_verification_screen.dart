@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/escrow_contract_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
@@ -44,11 +43,6 @@ class _DeliveryVerificationScreenState extends State<DeliveryVerificationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'Smart Escrow Release',
-        showBackButton: true,
-        currentRole: 'buyer',
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

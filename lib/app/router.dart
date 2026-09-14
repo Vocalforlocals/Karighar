@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
-import '../features/auth/presentation/auth_screen.dart';
-import '../features/auth/presentation/role_selection_screen.dart';
+import '../core/services/api_client.dart';
 import '../features/artisan/presentation/artisan_shell_screen.dart';
 import '../features/artisan/presentation/artisan_dashboard_screen.dart';
 import '../features/artisan/presentation/studio_wizard_screen.dart';
@@ -11,6 +10,9 @@ import '../features/artisan/presentation/cluster_order_pooling_screen.dart';
 import '../features/artisan/presentation/karighar_credit_screen.dart';
 import '../features/buyer/presentation/buyer_shell_screen.dart';
 import '../features/buyer/presentation/buyer_home_screen.dart';
+import '../features/buyer/presentation/buyer_explore_screen.dart';
+import '../features/buyer/presentation/buyer_stories_screen.dart';
+import '../features/buyer/presentation/buyer_profile_screen.dart';
 import '../features/buyer/presentation/product_detail_screen.dart';
 import '../features/buyer/presentation/cart_screen.dart';
 import '../features/buyer/presentation/buyer_quotes_screen.dart';
@@ -20,7 +22,8 @@ import '../features/buyer/presentation/ar_craft_viewer_screen.dart';
 import '../features/buyer/presentation/invoice_preview_screen.dart';
 import '../features/buyer/presentation/export_customs_screen.dart';
 import '../features/buyer/presentation/delivery_verification_screen.dart';
-import '../features/chat/presentation/chat_negotiation_screen.dart';
+import '../features/buyer/presentation/buyer_payment_screen.dart';
+import '../features/buyer/presentation/order_tracking_screen.dart';
 import '../features/admin/presentation/admin_dashboard_screen.dart';
 import '../features/admin/presentation/gis_cluster_map_screen.dart';
 import '../features/trust/presentation/blockchain_explorer_screen.dart';
@@ -28,51 +31,90 @@ import '../features/error/presentation/not_found_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/buyer',
+    redirect: (context, state) {
+      final loc = state.matchedLocation;
+      if (loc.startsWith('/artisan') || loc.startsWith('/studio') || loc == '/add-product') {
+        final user = ApiClient.currentUser;
+        final isArtisan = user != null && user.role.toUpperCase() == 'ARTISAN';
+        if (!isArtisan) {
+          return '/buyer/profile';
+        }
+      }
+      return null;
+    },
     errorBuilder: (context, state) => NotFoundScreen(path: state.uri.toString()),
     routes: [
-      // AUTH / ONBOARDING ALIASES
+      // DEFAULT ROOT ENTRY -> BUYER HOME SCREEN
       GoRoute(
         path: '/',
-        builder: (context, state) => const AuthScreen(),
+        redirect: (context, state) => '/buyer',
       ),
+      // AUTH & ONBOARDING DIRECTED TO PROFILE SECTION
       GoRoute(
         path: '/login',
-        builder: (context, state) => const AuthScreen(),
+        redirect: (context, state) => '/buyer/profile',
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const AuthScreen(),
+        redirect: (context, state) => '/buyer/profile',
       ),
       GoRoute(
         path: '/auth',
-        builder: (context, state) => const AuthScreen(),
+        redirect: (context, state) => '/buyer/profile',
       ),
       GoRoute(
         path: '/role-selection',
-        builder: (context, state) => const RoleSelectionScreen(),
+        redirect: (context, state) => '/buyer/profile',
       ),
 
-      // 🎨 TOP-LEVEL AI STUDIO WIZARD ALIASES
+      // 🎨 TOP-LEVEL AI STUDIO WIZARD ALIASES (ROLE-GUARDED)
       GoRoute(
         path: '/studio',
-        builder: (context, state) => const StudioWizardScreen(),
+        redirect: (context, state) {
+          final user = ApiClient.currentUser;
+          if (user == null || user.role.toUpperCase() != 'ARTISAN') {
+            return '/buyer/profile';
+          }
+          return '/artisan/studio';
+        },
       ),
       GoRoute(
         path: '/studio-wizard',
-        builder: (context, state) => const StudioWizardScreen(),
+        redirect: (context, state) {
+          final user = ApiClient.currentUser;
+          if (user == null || user.role.toUpperCase() != 'ARTISAN') {
+            return '/buyer/profile';
+          }
+          return '/artisan/studio';
+        },
       ),
       GoRoute(
         path: '/add-product',
-        builder: (context, state) => const StudioWizardScreen(),
+        redirect: (context, state) {
+          final user = ApiClient.currentUser;
+          if (user == null || user.role.toUpperCase() != 'ARTISAN') {
+            return '/buyer/profile';
+          }
+          return '/artisan/add-product';
+        },
       ),
 
-      // 🎨 ARTISAN APP WITH PERSISTENT BOTTOM NAVIGATION SHELL
+      // 🎨 ARTISAN APP WITH PERSISTENT BOTTOM NAVIGATION SHELL (SELLER ONLY)
       ShellRoute(
         builder: (context, state, child) => ArtisanShellScreen(child: child),
         routes: [
           GoRoute(
             path: '/artisan',
+            redirect: (context, state) {
+              final user = ApiClient.currentUser;
+              final isArtisan = user != null && user.role.toUpperCase() == 'ARTISAN';
+              if (!isArtisan) {
+                // Non-artisan users (Buyers or guests) are restricted from accessing Seller Studio
+                return '/buyer/profile';
+              }
+              return null; // Artisan granted access
+            },
             builder: (context, state) => const ArtisanDashboardScreen(),
             routes: [
               GoRoute(
@@ -93,6 +135,10 @@ class AppRouter {
               ),
               GoRoute(
                 path: 'quotes',
+                builder: (context, state) => const ArtisanQuotesScreen(),
+              ),
+              GoRoute(
+                path: 'chat',
                 builder: (context, state) => const ArtisanQuotesScreen(),
               ),
               GoRoute(
@@ -154,6 +200,18 @@ class AppRouter {
                 },
               ),
               GoRoute(
+                path: 'explore',
+                builder: (context, state) => const BuyerExploreScreen(),
+              ),
+              GoRoute(
+                path: 'stories',
+                builder: (context, state) => const BuyerStoriesScreen(),
+              ),
+              GoRoute(
+                path: 'profile',
+                builder: (context, state) => const BuyerProfileScreen(),
+              ),
+              GoRoute(
                 path: 'cart',
                 builder: (context, state) => const CartScreen(),
               ),
@@ -163,7 +221,7 @@ class AppRouter {
               ),
               GoRoute(
                 path: 'chat',
-                builder: (context, state) => const ChatNegotiationScreen(),
+                builder: (context, state) => const BuyerQuotesScreen(),
               ),
               GoRoute(
                 path: 'invoice',
@@ -200,6 +258,17 @@ class AppRouter {
                 builder: (context, state) {
                   final q = state.uri.queryParameters['q'];
                   return BlockchainExplorerScreen(initialSearch: q);
+                },
+              ),
+              GoRoute(
+                path: 'payment',
+                builder: (context, state) => const BuyerPaymentScreen(),
+              ),
+              GoRoute(
+                path: 'track/:orderId',
+                builder: (context, state) {
+                  final orderId = state.pathParameters['orderId'] ?? 'ORD-2026-9041';
+                  return OrderTrackingScreen(orderId: orderId);
                 },
               ),
             ],

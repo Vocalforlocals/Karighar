@@ -11,7 +11,6 @@ import '../../../core/services/speech/speech_service.dart';
 import '../../../core/services/sync_client_service.dart';
 import '../../../core/services/weave_vision_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_audio_waveform.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
@@ -52,7 +51,6 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   final List<String?> _anglePhotoNames = [null, null, null, null];
   final Map<int, Map<String, dynamic>> _angleBackendResults = {};
   Map<String, dynamic>? _compositeInspectionResult;
-  bool _isInspectingAngle = false;
 
   // Demo craft presets for evaluation without hardware camera
   final List<Map<String, String>> _craftPresets = [
@@ -269,33 +267,34 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
     }
   }
 
+
   Future<void> _analyzeCurrentAngleWithBackend() async {
-    setState(() => _isInspectingAngle = true);
     final preset = _craftPresets[_selectedPresetIndex];
     final bytes = _anglePhotoBytes[_selectedAngleIndex];
     final base64Img = bytes != null ? 'data:image/jpeg;base64,${base64Encode(bytes)}' : null;
 
-    final result = await ApiClient.processCameraAngle(
-      angleKey: _angleKeys[_selectedAngleIndex],
-      angleIndex: _selectedAngleIndex,
-      angleLabel: _angleLabels[_selectedAngleIndex],
-      imageBase64: base64Img,
-      imageUrl: bytes == null ? preset['enhanced'] : null,
-      enhancementOptions: {
-        'superResolution': _enableSuperResolution,
-        'studioLighting': _enableStudioLighting,
-        'colorCalibration': _enableColorCalibration,
-        'backgroundDeClutter': _enableBackgroundDeClutter,
-      },
-      craftPreset: preset['title'],
-      craftCategory: _categoryController.text,
-    );
-    if (!mounted) return;
+    try {
+      final result = await ApiClient.processCameraAngle(
+        angleKey: _angleKeys[_selectedAngleIndex],
+        angleIndex: _selectedAngleIndex,
+        angleLabel: _angleLabels[_selectedAngleIndex],
+        imageBase64: base64Img,
+        imageUrl: bytes == null ? preset['enhanced'] : null,
+        enhancementOptions: {
+          'superResolution': _enableSuperResolution,
+          'studioLighting': _enableStudioLighting,
+          'colorCalibration': _enableColorCalibration,
+          'backgroundDeClutter': _enableBackgroundDeClutter,
+        },
+        craftPreset: preset['title'],
+        craftCategory: _categoryController.text,
+      );
+      if (!mounted) return;
 
-    setState(() {
-      _angleBackendResults[_selectedAngleIndex] = result;
-      _isInspectingAngle = false;
-    });
+      setState(() {
+        _angleBackendResults[_selectedAngleIndex] = result;
+      });
+    } catch (_) {}
   }
 
   Future<void> _loadCompositeInspection() async {
@@ -552,11 +551,6 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'AI Studio Wizard',
-        showBackButton: true,
-        currentRole: 'artisan',
-      ),
       body: ValueListenableBuilder<AppLanguage>(
         valueListenable: LocaleManager.currentLanguage,
         builder: (context, currentLang, _) {
@@ -953,167 +947,7 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-
-        // Action: Run AI Vision Inspection on Active Angle
-        Row(
-          children: [
-            Expanded(
-              child: VKButton(
-                label: _isInspectingAngle ? 'Analyzing angle with server neural vision...'.tr : 'Run AI Vision Inspection'.tr,
-                icon: _isInspectingAngle ? Icons.hourglass_top_rounded : Icons.radar_rounded,
-                variant: VKButtonVariant.secondary,
-                height: 40,
-                isLoading: _isInspectingAngle,
-                onPressed: _isInspectingAngle ? null : _analyzeCurrentAngleWithBackend,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        // AI Vision Telemetry & Server Verification Card
-        Builder(builder: (context) {
-          final activeResult = _angleBackendResults[_selectedAngleIndex];
-          final q = (activeResult?['qualityMetrics'] as Map<String, dynamic>?) ?? {};
-          final score = (q['overallScore'] as num?)?.toDouble() ?? 98.4;
-          final epi = q['endsPerInch'] ?? 128;
-          final ppi = q['picksPerInch'] ?? 114;
-          final knotSym = q['symmetryScore'] ?? 98.7;
-          final angleHash = activeResult?['hash'] ?? '0xCAM-a9f4c3b281d7e506';
-
-          return VKCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: AppColors.tealLight,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.verified_rounded, color: AppColors.teal, size: 20),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Karighar AI Vision Engine (HTTPS 8443)'.tr,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.tealDark, fontSize: 11),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  '${'AI Quality Assessment Score'.tr}: ${score.toStringAsFixed(1)}/100',
-                                  style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontSize: 13),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    VKBadge(
-                      label: 'Server Angle Verified'.tr,
-                      type: VKBadgeType.verified,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Microscopic Weave Density'.tr, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          Text('$epi EPI × $ppi PPI', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Knot Symmetry'.tr, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          Text('$knotSym%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.teal)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Anti-Powerloom Verification'.tr, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          const Text('100% Handloom', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.saffronDark)),
-                        ],
-                      ),
-                      const Divider(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Hash:', style: TextStyle(fontSize: 10, color: AppColors.textLight)),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              angleHash.toString(),
-                              textAlign: TextAlign.end,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: AppColors.textSecondary),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _buildQualityRow(Icons.wb_sunny_outlined, 'Lighting & Exposure'.tr, 'Balanced high CRI studio spotlight simulated'),
-                _buildQualityRow(Icons.palette_outlined, 'Color Authenticity'.tr, 'Accurate silk hue calibrated against GI standards'),
-                _buildQualityRow(Icons.crop_outlined, 'Background De-clutter'.tr, 'Workshop noise removed with soft blur vignette'),
-                _buildQualityRow(Icons.high_quality_outlined, 'Resolution Upscaling'.tr, 'Super-resolution 4x neural texture enhancement'),
-              ],
-            ),
-          );
-        }),
       ],
-    );
-  }
-
-  Widget _buildQualityRow(IconData icon, String title, String desc) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: AppColors.teal),
-          const SizedBox(width: 8),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                children: [
-                  TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                  TextSpan(text: desc),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

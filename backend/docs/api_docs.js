@@ -678,6 +678,117 @@ function getOpenApiSpec() {
             '200': { description: 'Aadhaar biometric e-KYC verification result.' }
           }
         }
+      },
+      '/api/v1/bhashini/languages': {
+        get: {
+          summary: 'List All 22 Scheduled Indian Languages + Bihari Regional Dialects',
+          tags: ['Bhashini & Voice AI'],
+          description: 'Fetches the complete matrix of 26 supported Indian languages including Hindi, Maithili, Bhojpuri, Magahi, Angika, Tamil, Bengali, Telugu, etc., with ASR, NMT, and TTS capabilities.',
+          responses: {
+            '200': { description: 'Supported languages catalog with ISO codes, native scripts, and regional flags.' }
+          }
+        }
+      },
+      '/api/v1/bhashini/asr': {
+        post: {
+          summary: 'Automatic Speech Recognition (Speech-to-Text)',
+          tags: ['Bhashini & Voice AI'],
+          description: 'Transcribes base64 audio into native text using Bhashini ULCA / Dhruva inference across 26 Indian languages and Bihari dialects.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    audioBase64: { type: 'string', example: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=' },
+                    languageCode: { type: 'string', enum: ['bho', 'mai', 'mag', 'anp', 'hi', 'ta', 'bn', 'te', 'mr', 'gu', 'kn', 'ml', 'or', 'pa', 'as', 'ur', 'sa', 'en'], example: 'bho' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Recognized text transcription with confidence score and dialect identification.' }
+          }
+        }
+      },
+      '/api/v1/bhashini/translate': {
+        post: {
+          summary: 'Indic Machine Translation (NMT)',
+          tags: ['Bhashini & Voice AI'],
+          description: 'Translates artisan text between any pair of Indic/Bihari languages and English using Bhashini NMT models.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['text'],
+                  properties: {
+                    text: { type: 'string', example: 'हमार बैंक खाता के बैलेंस केतना बा?' },
+                    sourceLang: { type: 'string', example: 'bho' },
+                    targetLang: { type: 'string', example: 'en' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Translated text output.' }
+          }
+        }
+      },
+      '/api/v1/bhashini/tts': {
+        post: {
+          summary: 'Text-to-Speech Synthesis (TTS)',
+          tags: ['Bhashini & Voice AI'],
+          description: 'Synthesizes natural mother-tongue spoken audio from text using Bhashini TTS neural voices (male/female).',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['text'],
+                  properties: {
+                    text: { type: 'string', example: 'प्रणाम! आपके बैंक खाते में ₹48,500 जमा हो चुके हैं।' },
+                    languageCode: { type: 'string', example: 'mai' },
+                    gender: { type: 'string', enum: ['female', 'male'], default: 'female' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Base64 WAV audio payload for immediate web and mobile playback.' }
+          }
+        }
+      },
+      '/api/v1/bhashini/voice-assistant': {
+        post: {
+          summary: 'Setu Didi Unified Multilingual Conversational Voice Assistant',
+          tags: ['Bhashini & Voice AI'],
+          description: 'Full voice loop: Mother-tongue speech/text input -> Intent resolution (DBT, loom orders, B2B quotes, PM-Vishwakarma subsidies) -> Mother-tongue dialect response -> Synthesized audio speech output.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    query: { type: 'string', example: 'हमार बैंक खाता के बैलेंस केतना बा?' },
+                    languageCode: { type: 'string', example: 'bho' },
+                    gender: { type: 'string', enum: ['female', 'male'], default: 'female' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Complete conversational response with localized text, English translation, UI route, and audioBase64.' }
+          }
+        }
       }
     }
   };

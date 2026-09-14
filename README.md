@@ -81,6 +81,21 @@ powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1
 
 ---
 
+### 4. Load Testing (Recommended)
+
+- **Install k6** (if not already installed):
+  ```powershell
+  choco install k6 -y   # or use winget: winget install -e --id Grafana.k6
+  ```
+- **Run the load test** (example for 50 virtual users, 1‑minute duration):
+  ```powershell
+  powershell -File load_test/run_load_test.ps1 -vus 50 -duration 1m
+  ```
+- The script writes results to `k6-output.json` in the project root. Open it with any JSON viewer or import into Grafana for richer dashboards.
+- Adjust `BASE_URL` via the `BASE_URL` environment variable if you want to test a different endpoint (e.g., a staging site).
+
+---
+
 ## 🏛️ Technology Stack
 
 | Layer | Technologies |

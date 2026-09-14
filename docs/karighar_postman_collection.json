@@ -1,0 +1,409 @@
+{
+  "info": {
+    "_postman_id": "karighar-unified-api-collection-2026",
+    "name": "Karighar (कारीघर) Unified API Collection",
+    "description": "Comprehensive Postman collection for Karighar REST APIs under MoSJE Problem Statement #26090. Includes Buyer Journey, Artisan Studio, AI Computer Vision, Varta-AI Negotiation, Escrow/PFMS, and Blockchain Provenance.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://karighar.vercel.app",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleProductId",
+      "value": "prod_01",
+      "type": "string"
+    },
+    {
+      "key": "sampleOrderId",
+      "value": "ORD-2026-9041",
+      "type": "string"
+    },
+    {
+      "key": "geminiApiKey",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Profile",
+      "item": [
+        {
+          "name": "Login (Buyer Persona)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"BUYER\",\n  \"email\": \"procurement@fabindia.com\",\n  \"password\": \"buyer2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ananya Sharma\",\n  \"phone\": \"+91 98765 12345\",\n  \"email\": \"ananya@craftbuyer.org\",\n  \"password\": \"securePass2026\",\n  \"role\": \"BUYER\",\n  \"organization\": \"Heritage Crafts Export\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Send Mobile OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+91 98765 43210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "send-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify Mobile OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+91 98765 43210\",\n  \"otp\": \"7829\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Buyer Journey - Catalog & Marketplace",
+      "item": [
+        {
+          "name": "List GI Products (Catalog)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?category=Textiles%20%26%20Weaves&q=Silk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "category", "value": "Textiles%20%26%20Weaves" },
+                { "key": "q", "value": "Silk" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Craft Details & Provenance Hash",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{sampleProductId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products", "{{sampleProductId}}"]
+            }
+          }
+        },
+        {
+          "name": "Explore GIS Craft Clusters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/gis/clusters",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "gis", "clusters"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Buyer Journey - AI Verification & Varta Negotiation",
+      "item": [
+        {
+          "name": "Gemini AI Gateway Status & Telemetry",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-gemini-api-key", "value": "{{geminiApiKey}}", "disabled": false }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ai", "status"]
+            }
+          }
+        },
+        {
+          "name": "Gemini AI Craft Consultation Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-gemini-api-key", "value": "{{geminiApiKey}}", "disabled": false }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are the mandatory GI certification standards for Varanasi Banarasi silk sarees?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/gemini-chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ai", "gemini-chat"]
+            }
+          }
+        },
+        {
+          "name": "AI Computer Vision Weave Quality Inspection",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-gemini-api-key", "value": "{{geminiApiKey}}", "disabled": false }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageUrl\": \"https://images.unsplash.com/photo-1610030469983-98e550d6193c\",\n  \"craftPreset\": \"Banarasi Katan Silk\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/weave-inspect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ai", "weave-inspect"]
+            }
+          }
+        },
+        {
+          "name": "Varta-AI Living-Wage Defense Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offeredPrice\": 4500,\n  \"daysOfCraft\": 14,\n  \"rawMaterialCost\": 2800\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/negotiate/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "negotiate", "evaluate"]
+            }
+          }
+        },
+        {
+          "name": "360° Multi-Angle GI Composite Inspection",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"prod_01\",\n  \"angles\": [\n    { \"angle\": \"overview\", \"score\": 98.4 },\n    { \"angle\": \"texture\", \"score\": 99.2 },\n    { \"angle\": \"motif\", \"score\": 99.1 },\n    { \"angle\": \"loom\", \"score\": 97.9 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/camera/multi-angle-inspect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ai", "camera", "multi-angle-inspect"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Buyer Journey - Orders, Smart Escrow & PFMS",
+      "item": [
+        {
+          "name": "Create Purchase Order (Smart Escrow Lock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerName\": \"FabIndia Global Procurement\",\n  \"buyerContact\": \"procurement@fabindia.com\",\n  \"productId\": \"prod_01\",\n  \"quantity\": 2,\n  \"totalAmount\": 17000,\n  \"escrowMilestone\": \"DEPOSITED_PFMS_ESCROW\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Orders List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Release Escrow via QR Scan & PFMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"ORD-2026-9041\",\n  \"amount\": 8500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/escrow/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "escrow", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. B2B Institutional Tenders",
+      "item": [
+        {
+          "name": "List Institutional Tenders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tenders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tenders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Blockchain & Provenance Verification",
+      "item": [
+        {
+          "name": "Get Immutable Blockchain Blocks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/blockchain/blocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "blockchain", "blocks"]
+            }
+          }
+        },
+        {
+          "name": "Inspect Transaction by Hash",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/blockchain/tx/0x9b48e3a24128f110",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "blockchain", "tx", "0x9b48e3a24128f110"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. System Telemetry & CERT-In Audit Logs",
+      "item": [
+        {
+          "name": "System Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health"]
+            }
+          }
+        },
+        {
+          "name": "Database & SQLite Telemetry",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/db/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "db", "stats"]
+            }
+          }
+        },
+        {
+          "name": "CERT-In Hash-Chained Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/audit-logs?limit=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "audit-logs"],
+              "query": [
+                { "key": "limit", "value": "25" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

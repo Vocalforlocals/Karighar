@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/currency_service.dart';
 import '../../../core/services/customs_export_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
@@ -40,11 +39,6 @@ class _ExportCustomsScreenState extends State<ExportCustomsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'Global Export Clearance',
-        showBackButton: true,
-        currentRole: 'buyer',
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

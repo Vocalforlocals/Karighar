@@ -751,6 +751,87 @@ class ApiClient {
     return currentUser;
   }
 
+  /// Fetch Dynamic Buyer Home Feed
+  static Future<Map<String, dynamic>?> getBuyerFeed() async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/v1/buyer/feed');
+      final response = await http.get(uri, headers: _headers).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('ApiClient.getBuyerFeed fallback: $e');
+    }
+    return null;
+  }
+
+  /// Request Google Gemini AI Buyer Curation
+  static Future<Map<String, dynamic>?> aiCurateBuyer({
+    List<String>? preferences,
+    String? occasion,
+    double? maxBudget,
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/v1/buyer/ai-curate');
+      final response = await http.post(
+        uri,
+        headers: _headers,
+        body: jsonEncode({
+          'preferences': preferences ?? [],
+          'occasion': occasion ?? 'Festive & Cultural Gifting',
+          'maxBudget': maxBudget ?? 15000,
+        }),
+      ).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('ApiClient.aiCurateBuyer fallback: $e');
+    }
+    return null;
+  }
+
+  /// Google Gemini AI Semantic Search
+  static Future<Map<String, dynamic>?> semanticSearchBuyer({
+    required String query,
+    String language = 'English',
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/v1/buyer/semantic-search');
+      final response = await http.post(
+        uri,
+        headers: _headers,
+        body: jsonEncode({
+          'query': query,
+          'language': language,
+        }),
+      ).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('ApiClient.semanticSearchBuyer fallback: $e');
+    }
+    return null;
+  }
+
+  /// Fetch Buyer Categories
+  static Future<List<Map<String, dynamic>>> getBuyerCategories() async {
+    try {
+      final uri = Uri.parse('$baseUrl/api/v1/buyer/categories');
+      final response = await http.get(uri, headers: _headers).timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['categories'] is List) {
+          return List<Map<String, dynamic>>.from(data['categories']);
+        }
+      }
+    } catch (e) {
+      debugPrint('ApiClient.getBuyerCategories fallback: $e');
+    }
+    return [];
+  }
+
   static void logout() {
     authToken = null;
     currentUser = null;

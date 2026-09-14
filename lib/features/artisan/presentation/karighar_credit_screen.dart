@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/services/credit_scoring_service.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/vk_app_bar.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
@@ -22,16 +22,37 @@ class _KarigharCreditScreenState extends State<KarigharCreditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const VKAppBar(
-        title: 'Karighar Credit Financial Hub',
-        showBackButton: true,
-        currentRole: 'artisan',
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Back Navigation Header
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                  tooltip: 'Back'.tr,
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/artisan');
+                    }
+                  },
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Karighar Credit Financial Hub'.tr,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             // Credit Score Hero Box
             VKCard(
               color: const Color(0xFF0F172A),
