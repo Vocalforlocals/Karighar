@@ -11,7 +11,7 @@ class ProductController {
   async getAll(req, res, { parsedUrl, sendJson }) {
     try {
       const category = parsedUrl.searchParams.get('category');
-      const search = parsedUrl.searchParams.get('q');
+      const search = parsedUrl.searchParams.get('q') || parsedUrl.searchParams.get('search');
       const artisanId = parsedUrl.searchParams.get('artisanId');
       const products = productRepository.getAll({ category, search, artisanId });
       return sendJson(res, 200, { success: true, count: products.length, products });

@@ -34,6 +34,7 @@ async function handleCommand() {
 
   switch (cmd) {
     case 'status': {
+      await dbAdapter.waitForConnection();
       console.log('================================================================');
       console.log(' 📊 Karighar Database Architecture Status');
       console.log('================================================================');
@@ -43,6 +44,10 @@ async function handleCommand() {
 
       console.log(` • Active Engine:       ${status.activeEngine.toUpperCase()}`);
       console.log(` • Configured Engine:   ${status.configuredEngine}`);
+      console.log(` • PostgreSQL Connected:${status.postgresConnected ? ' YES (Connected to Cluster)' : ' NO'}`);
+      if (status.configuredEngine === 'postgres' && !status.postgresConnected && status.postgresError) {
+        console.log(`   └─ Connection Error: ${status.postgresError}`);
+      }
       console.log(` • Atomic File-Swap:    ${status.atomicSwapEnabled ? 'ENABLED (ACID safe)' : 'DISABLED'}`);
       console.log(` • JSON File Path:      ${status.databaseFilePath} (${Math.round(stat.size / 1024)} KB)`);
       console.log(` • Products Count:      ${(db.products || []).length}`);
@@ -50,6 +55,22 @@ async function handleCommand() {
       console.log(` • Tenders Count:       ${(db.tenders || []).length}`);
       console.log(` • GIS Clusters Count:  ${(db.gisClusters || []).length}`);
       console.log(` • Blockchain Blocks:   ${(db.blockchainBlocks || []).length}`);
+
+      if (status.activeEngine === 'postgres') {
+        try {
+          const pgArtisans = await dbAdapter.query('SELECT COUNT(*) FROM artisans');
+          const pgProducts = await dbAdapter.query('SELECT COUNT(*) FROM craft_products');
+          const pgOrders = await dbAdapter.query('SELECT COUNT(*) FROM orders');
+          const pgTenders = await dbAdapter.query('SELECT COUNT(*) FROM tenders');
+          console.log('\n 🐘 PostgreSQL Live Cluster Counts:');
+          console.log(`   - Artisans:          ${pgArtisans.rows[0].count}`);
+          console.log(`   - Craft Products:    ${pgProducts.rows[0].count}`);
+          console.log(`   - Orders:            ${pgOrders.rows[0].count}`);
+          console.log(`   - Tenders:           ${pgTenders.rows[0].count}`);
+        } catch (pgErr) {
+          console.warn('   [PG NOTICE] Could not query live counts:', pgErr.message);
+        }
+      }
 
       const sqliteStatus = sqliteEngine.getStatus();
       console.log(` • Native SQLite:       ${sqliteStatus.active ? 'OPERATIONAL' : 'OFFLINE'}`);

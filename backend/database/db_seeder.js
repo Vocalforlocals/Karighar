@@ -77,6 +77,32 @@ function generateSqlSeed() {
       pm_vishwakarma_id: 'PM-VISHWAKARMA-CG-BAS-7819',
       trust_score: 810,
       is_dbt_linked: true
+    },
+    {
+      id: 'art_shanti_02',
+      aadhaar_vault_token: 'vault_uid_7812_4319_madhubani',
+      full_name: 'Shanti Devi',
+      phone_number: '+91-9876543213',
+      state: 'Bihar',
+      district: 'Madhubani',
+      cluster_name: 'Mithila Folk Painting Collective',
+      craft_category: 'Painting & Art',
+      pm_vishwakarma_id: 'PM-VISHWAKARMA-BR-MTH-0412',
+      trust_score: 880,
+      is_dbt_linked: true
+    },
+    {
+      id: 'art_mukesh_03',
+      aadhaar_vault_token: 'vault_uid_9124_7821_chanderi',
+      full_name: 'Mukesh Koli',
+      phone_number: '+91-9876543214',
+      state: 'Madhya Pradesh',
+      district: 'Ashoknagar',
+      cluster_name: 'Chanderi Handloom Weavers Guild',
+      craft_category: 'Textiles & Weaves',
+      pm_vishwakarma_id: 'PM-VISHWAKARMA-MP-CHA-5120',
+      trust_score: 850,
+      is_dbt_linked: true
     }
   ];
 

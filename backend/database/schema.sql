@@ -40,6 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_artisans_craft_category ON artisans(craft_categor
 CREATE INDEX IF NOT EXISTS idx_artisans_state_district ON artisans(state, district);
 CREATE INDEX IF NOT EXISTS idx_artisans_trust_score ON artisans(trust_score DESC);
 
+DROP TRIGGER IF EXISTS trg_artisans_updated_at ON artisans;
 CREATE TRIGGER trg_artisans_updated_at
 BEFORE UPDATE ON artisans
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
@@ -70,6 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_products_price ON craft_products(price);
 CREATE INDEX IF NOT EXISTS idx_products_sha256 ON craft_products(sha256_hash);
 CREATE INDEX IF NOT EXISTS idx_products_tags ON craft_products USING GIN(tags);
 
+DROP TRIGGER IF EXISTS trg_products_updated_at ON craft_products;
 CREATE TRIGGER trg_products_updated_at
 BEFORE UPDATE ON craft_products
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
@@ -97,6 +99,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_escrow_status ON orders(escrow_status);
 CREATE INDEX IF NOT EXISTS idx_orders_pfms_ref ON orders(pfms_ref);
 
+DROP TRIGGER IF EXISTS trg_orders_updated_at ON orders;
 CREATE TRIGGER trg_orders_updated_at
 BEFORE UPDATE ON orders
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
@@ -126,6 +129,7 @@ CREATE INDEX IF NOT EXISTS idx_tenders_status ON tenders(status);
 CREATE INDEX IF NOT EXISTS idx_tenders_deadline ON tenders(deadline);
 CREATE INDEX IF NOT EXISTS idx_tenders_gem_ref ON tenders(gem_portal_reference);
 
+DROP TRIGGER IF EXISTS trg_tenders_updated_at ON tenders;
 CREATE TRIGGER trg_tenders_updated_at
 BEFORE UPDATE ON tenders
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();

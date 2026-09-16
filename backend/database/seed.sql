@@ -13,6 +13,66 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
 VALUES ('art_somnath_03', 'vault_uid_8941_1204_bastar', 'Somnath Baghel', '+91-9876543212', 'Chhattisgarh', 'Bastar', 'Bastar Lost-Wax Bell Metal Guild', 'Metal Crafts', 'PM-VISHWAKARMA-CG-BAS-7819', 810, TRUE)
 ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_shanti_02', 'vault_uid_7812_4319_madhubani', 'Shanti Devi', '+91-9876543213', 'Bihar', 'Madhubani', 'Mithila Folk Painting Collective', 'Painting & Art', 'PM-VISHWAKARMA-BR-MTH-0412', 880, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_mukesh_03', 'vault_uid_9124_7821_chanderi', 'Mukesh Koli', '+91-9876543214', 'Madhya Pradesh', 'Ashoknagar', 'Chanderi Handloom Weavers Guild', 'Textiles & Weaves', 'PM-VISHWAKARMA-MP-CHA-5120', 850, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_shanta_03', 'vault_uid_3419_8123_ranti', 'Shanta Devi (National Awardee)', '+91-9876543215', 'Bihar', 'Madhubani', 'Ranti Craft Village, Madhubani', 'Painting & Art', 'PM-VISHWAKARMA-BR-RAN-0812', 890, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_radheshyam_04', 'vault_uid_4512_9812_jaipur', 'Radheshyam Prajapati', '+91-9876543216', 'Rajasthan', 'Jaipur', 'Kot Jewar, Jaipur', 'Ceramics & Pottery', 'PM-VISHWAKARMA-RJ-JAI-1920', 860, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_ghulam_05', 'vault_uid_5623_1294_srinagar', 'Ghulam Hassan Mir', '+91-9876543217', 'Jammu & Kashmir', 'Srinagar', 'Zainakote Loom Cluster, Srinagar', 'Textiles & Weaves', 'PM-VISHWAKARMA-JK-SRI-7712', 885, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_somappa_06', 'vault_uid_6734_2305_channapatna', 'K. Somappa (Shilp Guru)', '+91-9876543218', 'Karnataka', 'Ramanagara', 'Channapatna Lacquer Guild', 'Woodcraft & Toys', 'PM-VISHWAKARMA-KA-RAM-3341', 895, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_manoj_07', 'vault_uid_7845_3416_bhagalpur', 'Manoj Pandit', '+91-9876543219', 'Bihar', 'Bhagalpur', 'Champanagar Tussar Cluster, Bhagalpur', 'Textiles & Weaves', 'PM-VISHWAKARMA-BR-BHA-8823', 840, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_biren_08', 'vault_uid_8956_4527_puri', 'Birendra Mahapatra', '+91-9876543220', 'Odisha', 'Puri', 'Raghurajpur Heritage Crafts Village, Puri', 'Painting & Art', 'PM-VISHWAKARMA-OD-PUR-4512', 870, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_sukumar_09', 'vault_uid_9067_5638_bastar', 'Sukumar Baghel', '+91-9876543221', 'Chhattisgarh', 'Bastar', 'Kondagaon Bell Metal Cluster, Bastar', 'Metal Crafts', 'PM-VISHWAKARMA-CG-KON-6619', 835, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_subramanian_10', 'vault_uid_0178_6749_thanjavur', 'Subramanian Sthapathy', '+91-9876543222', 'Tamil Nadu', 'Thanjavur', 'Swamimalai Bronze Guild, Thanjavur', 'Metal Crafts', 'PM-VISHWAKARMA-TN-THA-9014', 890, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_parvati_11', 'vault_uid_1289_7850_dindori', 'Parvati Bai Maravi', '+91-9876543223', 'Madhya Pradesh', 'Dindori', 'Patangarh Gond Studio, Dindori', 'Painting & Art', 'PM-VISHWAKARMA-MP-DIN-1289', 855, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_iqbal_12', 'vault_uid_2390_8961_moradabad', 'Ustad Iqbal Ahmed', '+91-9876543224', 'Uttar Pradesh', 'Moradabad', 'Moradabad Peetal Nagari Guild', 'Metal Crafts', 'PM-VISHWAKARMA-UP-MOR-3490', 865, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_sunita_13', 'vault_uid_3401_9072_bargarh', 'Sunita Meher', '+91-9876543225', 'Odisha', 'Bargarh', 'Bargarh Handloom Weaver Cooperative', 'Textiles & Weaves', 'PM-VISHWAKARMA-OD-BAR-7801', 850, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_gurmeet_14', 'vault_uid_4512_0183_patiala', 'Gurmeet Kaur', '+91-9876543226', 'Punjab', 'Patiala', 'Tripuri Patiala Phulkari Society', 'Textiles & Weaves', 'PM-VISHWAKARMA-PB-PAT-4510', 860, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_ananya_15', 'vault_uid_5623_1294_bankura', 'Ananya Roy', '+91-9876543227', 'West Bengal', 'Bankura', 'Bishnupur Baluchari Weaver Society, Bankura', 'Textiles & Weaves', 'PM-VISHWAKARMA-WB-BAN-9923', 845, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_bhaskar_16', 'vault_uid_6734_2305_kolkata', 'Bhaskar Chitrakar', '+91-9876543228', 'West Bengal', 'Kolkata', 'Kalighat Patachitra Guild, Kolkata', 'Painting & Art', 'PM-VISHWAKARMA-WB-KOL-8190', 875, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_chotelal_17', 'vault_uid_7845_3416_azamgarh', 'Chotelal Kumhar', '+91-9876543229', 'Uttar Pradesh', 'Azamgarh', 'Nizamabad Black Clay Pottery SHG, Azamgarh', 'Ceramics & Pottery', 'PM-VISHWAKARMA-UP-AZA-2281', 830, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_devraj_18', 'vault_uid_8956_4527_mysuru', 'Devraj Urs', '+91-9876543230', 'Karnataka', 'Mysuru', 'Mandi Mohalla Inlay Works, Mysuru', 'Woodcraft & Toys', 'PM-VISHWAKARMA-KA-MYS-7124', 880, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_fatima_19', 'vault_uid_9067_5638_lucknow', 'Fatima Zohra', '+91-9876543231', 'Uttar Pradesh', 'Lucknow', 'Chowk Zardozi & Chikankari Guild, Lucknow', 'Textiles & Weaves', 'PM-VISHWAKARMA-UP-LUC-5519', 870, TRUE)
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO artisans (id, aadhaar_vault_token, full_name, phone_number, state, district, cluster_name, craft_category, pm_vishwakarma_id, trust_score, is_dbt_linked)
+VALUES ('art_harish_20', 'vault_uid_0178_6749_jaipur', 'Harish Chandra Soni', '+91-9876543232', 'Rajasthan', 'Jaipur', 'Johari Bazaar Meenakari Guild, Jaipur', 'Metal Crafts', 'PM-VISHWAKARMA-RJ-JAI-6041', 865, TRUE)
+ON CONFLICT (id) DO NOTHING;
 
 -- 2. CRAFT PRODUCTS
 INSERT INTO craft_products (id, artisan_id, title, category, craft_form, description, price, stock_quantity, estimated_craft_hours, sha256_hash, gi_tag_certified, tags, image_url)

@@ -6,6 +6,29 @@
 
 const fs = require('fs');
 const path = require('path');
+
+// Lightweight Native .env loader (loads root .env if present)
+const envPath = path.join(__dirname, '..', '..', '.env');
+if (fs.existsSync(envPath)) {
+  try {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    for (const line of envContent.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        const key = trimmed.substring(0, idx).trim();
+        const val = trimmed.substring(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[ENV] Notice loading .env in db_adapter:', e.message);
+  }
+}
+
 const { sqliteEngine } = require('./sqlite_engine');
 
 const DB_FILE = path.join(__dirname, '..', 'data', 'database.json');
@@ -13,6 +36,8 @@ const ENGINE = (process.env.DB_ENGINE || 'json').toLowerCase();
 
 let pgPool = null;
 let pgConnected = false;
+let pgInitPromise = null;
+let pgError = null;
 
 // Attempt PostgreSQL initialization if configured
 if (ENGINE === 'postgres' && process.env.DATABASE_URL) {
@@ -25,16 +50,19 @@ if (ENGINE === 'postgres' && process.env.DATABASE_URL) {
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000
     });
-    pgPool.query('SELECT NOW()', (err) => {
-      if (err) {
-        console.warn('[STORAGE WARN] PostgreSQL connection failed, falling back to Atomic JSON:', err.message);
-        pgConnected = false;
-      } else {
+    pgInitPromise = pgPool.query('SELECT NOW()')
+      .then(() => {
         console.log('[STORAGE] Connected to PostgreSQL 16 Enterprise Cluster');
         pgConnected = true;
-      }
-    });
+        pgError = null;
+      })
+      .catch((err) => {
+        pgError = err.message;
+        console.warn('[STORAGE WARN] PostgreSQL connection failed, falling back to Atomic JSON:', err.message);
+        pgConnected = false;
+      });
   } catch (err) {
+    pgError = err.message;
     console.warn('[STORAGE WARN] "pg" module not installed or invalid configuration. Using Atomic JSON engine.');
     pgConnected = false;
   }
@@ -123,6 +151,13 @@ const dbAdapter = {
     throw new Error('No relational SQL driver (PostgreSQL or SQLite) is currently active.');
   },
 
+  async waitForConnection() {
+    if (pgInitPromise) {
+      await pgInitPromise;
+    }
+    return this.getStatus();
+  },
+
   getStatus() {
     return {
       activeEngine: this.getEngine(),
@@ -130,6 +165,7 @@ const dbAdapter = {
       atomicSwapEnabled: true,
       postgresPoolConfigured: !!pgPool,
       postgresConnected: pgConnected,
+      postgresError: pgError,
       sqliteAvailable: sqliteEngine.isAvailable,
       sqliteFile: sqliteEngine.isAvailable ? sqliteEngine.getStatus().file : null,
       databaseFilePath: DB_FILE
