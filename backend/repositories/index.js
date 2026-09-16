@@ -10,6 +10,7 @@ const creditRepository = require('./credit_repository');
 const blockchainRepository = require('./blockchain_repository');
 const artisanRepository = require('./artisan_repository');
 const authRepository = require('./auth_repository');
+const chatRepository = require('./chat_repository');
 
 module.exports = {
   productRepository,
@@ -18,5 +19,6 @@ module.exports = {
   creditRepository,
   blockchainRepository,
   artisanRepository,
-  authRepository
+  authRepository,
+  chatRepository
 };

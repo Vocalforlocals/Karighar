@@ -24,7 +24,7 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   String _selectedPriceRange = 'All'; // 'All', '<1500', '1500-5000', '5000-12000', '>12000'
   String _selectedState = 'All';
   String _selectedHonor = 'All';
-  String _selectedSort = 'popularity'; // 'popularity', 'price_asc', 'price_desc', 'rating'
+  final String _selectedSort = 'popularity'; // 'popularity', 'price_asc', 'price_desc', 'rating'
 
   String _formatInr(num amount) {
     final str = amount.round().toString();
@@ -147,10 +147,6 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
           backgroundColor: AppColors.background,
           body: BlocBuilder<BuyerBloc, BuyerState>(
         builder: (context, state) {
-          // Responsive multi-breakpoint layout calculations
-          final screenWidth = MediaQuery.of(context).size.width;
-          final isDesktop = screenWidth >= 900;
-
           // Apply active category and faceted filters
           List<Product> displayedProducts = List.from(state.filteredProducts);
           if (_selectedCategory != 'All') {
@@ -186,11 +182,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
             displayedProducts.sort((a, b) => (b.isGICertified ? 1 : 0).compareTo(a.isGICertified ? 1 : 0));
           }
 
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1320),
-              child: CustomScrollView(
-                slivers: [
+          return CustomScrollView(
+            slivers: [
                   // ================================================================
                   // 1. TIER-1 TOP HEADER / TICKER (DESKTOP) OR SLIVER APP BAR (MOBILE)
                   // ================================================================
@@ -227,19 +220,6 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                                 ],
                               ),
                             ),
-                            if (isDesktop) ...[
-                              const SizedBox(width: 12),
-                              Row(
-                                children: [
-                                  const Icon(Icons.verified_rounded, color: AppColors.emeraldDeep, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '100% Direct DBT Bank Rails to Artisans',
-                                    style: GoogleFonts.plusJakartaSans(color: AppColors.zariGoldLight, fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -456,106 +436,60 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
               ),
 
               // ================================================================
-              // 7. PRODUCT SHOWCASE: DESKTOP 2-PANE (FACETED SIDEBAR + GRID) OR MOBILE GRID
+              // 7. PRODUCT SHOWCASE: UNIFIED MOBILE 2-COLUMN GRID
               // ================================================================
-              if (isDesktop)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 18, left: 14, right: 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left Sidebar (250px)
-                        _buildDesktopFilterSidebar(context, displayedProducts.length),
-                        const SizedBox(width: 20),
-
-                        // Right Product Showcase
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildDesktopSortBar(displayedProducts.length),
-                              const SizedBox(height: 16),
-                              if (displayedProducts.isEmpty)
-                                _buildEmptyState()
-                              else
-                                GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: screenWidth < 1200 ? 3 : 4,
-                                    childAspectRatio: 0.58,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 14,
-                                  ),
-                                  itemCount: displayedProducts.length,
-                                  itemBuilder: (context, index) {
-                                    final product = displayedProducts[index];
-                                    final isFavorite = _wishlist.contains(product.id);
-                                    return _buildProductCard(context, product, isFavorite);
-                                  },
-                                ),
-                            ],
+              // Mobile Grid Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 14, left: 14, right: 14, bottom: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${'Curated Heritage Crafts'.tr} (${displayedProducts.length})',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '100% Certified GI • Direct DBT Bank Rails'.tr,
+                            style: const TextStyle(fontSize: 10.5, color: AppColors.emeraldDeep, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.tune_rounded, size: 16, color: AppColors.terracotta),
+                        label: Text('Filter'.tr, style: const TextStyle(color: AppColors.terracotta, fontSize: 12, fontWeight: FontWeight.bold)),
+                        onPressed: () => context.go('/buyer/explore'),
+                      ),
+                    ],
                   ),
-                )
-              else ...[
-                // Mobile Grid Header
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 14, left: 14, right: 14, bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${'Curated Heritage Crafts'.tr} (${displayedProducts.length})',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '100% Certified GI • Direct DBT Bank Rails'.tr,
-                              style: const TextStyle(fontSize: 10.5, color: AppColors.emeraldDeep, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.tune_rounded, size: 16, color: AppColors.terracotta),
-                          label: Text('Filter'.tr, style: const TextStyle(color: AppColors.terracotta, fontSize: 12, fontWeight: FontWeight.bold)),
-                          onPressed: () => context.go('/buyer/explore'),
-                        ),
-                      ],
+                ),
+              ),
+              if (displayedProducts.isEmpty)
+                SliverToBoxAdapter(child: _buildEmptyState())
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.58,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final product = displayedProducts[index];
+                        final isFavorite = _wishlist.contains(product.id);
+                        return _buildProductCard(context, product, isFavorite);
+                      },
+                      childCount: displayedProducts.length,
                     ),
                   ),
                 ),
-                if (displayedProducts.isEmpty)
-                  SliverToBoxAdapter(child: _buildEmptyState())
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.58,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final product = displayedProducts[index];
-                          final isFavorite = _wishlist.contains(product.id);
-                          return _buildProductCard(context, product, isFavorite);
-                        },
-                        childCount: displayedProducts.length,
-                      ),
-                    ),
-                  ),
-              ],
 
               // ================================================================
               // 9. THE KARIGHAR PROVENANCE PROMISE (TRUST PILLARS)
@@ -638,12 +572,10 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 child: SizedBox(height: 40),
               ),
             ],
-          ),
-        ),
-            );
-          },
-        ),
-      );
+          );
+        },
+      ),
+    );
     },
   );
 }
@@ -658,304 +590,6 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
       child: Text(
         digits,
         style: const TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.bold, fontSize: 11),
-      ),
-    );
-  }
-
-  Widget _buildDesktopFilterSidebar(BuildContext context, int totalCount) {
-    final hasActiveFilter = _selectedCategory != 'All' ||
-        _selectedPriceRange != 'All' ||
-        _selectedState != 'All' ||
-        _selectedHonor != 'All';
-
-    return Container(
-      width: 250,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Filter Header & Clear All
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.tune_rounded, size: 18, color: AppColors.terracotta),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Filters'.tr,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              if (hasActiveFilter)
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      _selectedCategory = 'All';
-                      _selectedPriceRange = 'All';
-                      _selectedState = 'All';
-                      _selectedHonor = 'All';
-                    });
-                    context.read<BuyerBloc>().add(const CategorySelectedEvent('All'));
-                  },
-                  child: Text(
-                    'CLEAR ALL'.tr,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.terracotta,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: AppColors.cardBorder),
-          const SizedBox(height: 16),
-
-          // Facet 1: Price Range
-          _buildFilterSectionTitle('PRICE RANGE'),
-          const SizedBox(height: 8),
-          _buildFilterRadioOption('All Prices', 'All', _selectedPriceRange, (val) {
-            setState(() => _selectedPriceRange = val);
-          }),
-          _buildFilterRadioOption('Under ₹1,500', '<1500', _selectedPriceRange, (val) {
-            setState(() => _selectedPriceRange = val);
-          }),
-          _buildFilterRadioOption('₹1,500 - ₹5,000', '1500-5000', _selectedPriceRange, (val) {
-            setState(() => _selectedPriceRange = val);
-          }),
-          _buildFilterRadioOption('₹5,000 - ₹12,000', '5000-12000', _selectedPriceRange, (val) {
-            setState(() => _selectedPriceRange = val);
-          }),
-          _buildFilterRadioOption('Above ₹12,000', '>12000', _selectedPriceRange, (val) {
-            setState(() => _selectedPriceRange = val);
-          }),
-
-          const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.cardBorder),
-          const SizedBox(height: 16),
-
-          // Facet 2: Geographic Heritage / State
-          _buildFilterSectionTitle('CRAFT CLUSTER & STATE'),
-          const SizedBox(height: 8),
-          _buildFilterRadioOption('All Craft States', 'All', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('Varanasi & UP', 'Uttar Pradesh', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('Mithila & Bihar', 'Bihar', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('Rajasthan (Jaipur)', 'Rajasthan', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('Kashmir Valley', 'Kashmir', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('Karnataka (Woodcraft)', 'Karnataka', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-          _buildFilterRadioOption('West Bengal', 'West Bengal', _selectedState, (val) {
-            setState(() => _selectedState = val);
-          }),
-
-          const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.cardBorder),
-          const SizedBox(height: 16),
-
-          // Facet 3: Artisan Honors & GI Registry
-          _buildFilterSectionTitle('ARTISAN HONORS & GI'),
-          const SizedBox(height: 8),
-          _buildFilterRadioOption('All Certified Crafts', 'All', _selectedHonor, (val) {
-            setState(() => _selectedHonor = val);
-          }),
-          _buildFilterRadioOption('Padma Shri Masters', 'Padma Shri', _selectedHonor, (val) {
-            setState(() => _selectedHonor = val);
-          }),
-          _buildFilterRadioOption('National & State Awardees', 'Awardee', _selectedHonor, (val) {
-            setState(() => _selectedHonor = val);
-          }),
-
-          const SizedBox(height: 20),
-          // Provenance Trust Pill in Sidebar
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.emeraldDeep.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.emeraldDeep.withValues(alpha: 0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.verified_user_rounded, color: AppColors.emeraldDeep, size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Govt GI Verified',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.emeraldDeep,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Every item is backed by direct Aadhaar DBT payment and escrow protection.',
-                  style: TextStyle(fontSize: 10, color: AppColors.textSecondary, height: 1.3),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterSectionTitle(String title) {
-    return Text(
-      title.tr,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        color: AppColors.textSecondary,
-        letterSpacing: 0.6,
-      ),
-    );
-  }
-
-  Widget _buildFilterRadioOption(String label, String value, String currentValue, ValueChanged<String> onSelected) {
-    final isSelected = value == currentValue;
-    return InkWell(
-      onTap: () => onSelected(value),
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-        child: Row(
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? AppColors.terracotta : AppColors.cardBorder,
-                  width: isSelected ? 4.5 : 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                label.tr,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesktopSortBar(int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Showing '.tr,
-                style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textSecondary),
-              ),
-              Text(
-                '$count ${'Masterpieces'.tr}',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Text(
-                'Sort By: '.tr,
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-              ),
-              const SizedBox(width: 8),
-              _buildSortChip('Popularity', 'popularity'),
-              const SizedBox(width: 6),
-              _buildSortChip('Price: Low to High', 'price_asc'),
-              const SizedBox(width: 6),
-              _buildSortChip('Price: High to Low', 'price_desc'),
-              const SizedBox(width: 6),
-              _buildSortChip('GI Certified', 'rating'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSortChip(String label, String sortKey) {
-    final isSelected = _selectedSort == sortKey;
-    return InkWell(
-      onTap: () => setState(() => _selectedSort = sortKey),
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.terracotta.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.terracotta : AppColors.cardBorder,
-            width: isSelected ? 1.5 : 1.0,
-          ),
-        ),
-        child: Text(
-          label.tr,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected ? AppColors.terracotta : AppColors.textSecondary,
-          ),
-        ),
       ),
     );
   }

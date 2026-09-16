@@ -66,9 +66,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 900;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: BlocBuilder<BuyerBloc, BuyerState>(
@@ -354,22 +351,6 @@ class _CartScreenState extends State<CartScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.terracotta,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 2,
-                    ),
-                    icon: const Icon(Icons.payment_rounded),
-                    label: Text('PROCEED TO PAYMENT'.tr, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 0.5)),
-                    onPressed: () => context.go('/buyer/payment'),
-                  ),
-                ),
                 const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -383,69 +364,60 @@ class _CartScreenState extends State<CartScreen> {
             ),
           );
 
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1320),
-              child: isDesktop
-                  ? SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      itemsList,
+                      const SizedBox(height: 16),
+                      priceDetailsCard,
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(top: BorderSide(color: AppColors.cardBorder)),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(flex: 6, child: itemsList),
-                          const SizedBox(width: 28),
-                          Expanded(flex: 4, child: priceDetailsCard),
+                          Text('Total Payable'.tr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          Text(_formatInr(state.cartTotal + gstAmount),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.terracotta)),
                         ],
                       ),
-                    )
-                  : Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-                            child: itemsList,
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.terracotta,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
+                          icon: const Icon(Icons.payment_rounded),
+                          label: Text('PROCEED TO PAYMENT'.tr, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                          onPressed: () => context.go('/buyer/payment'),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface,
-                            border: Border(top: BorderSide(color: AppColors.cardBorder)),
-                          ),
-                          child: SafeArea(
-                            top: false,
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Total Payable'.tr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                                    Text(_formatInr(state.cartTotal + gstAmount),
-                                        style: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.terracotta)),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 50,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.terracotta,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    ),
-                                    icon: const Icon(Icons.payment_rounded),
-                                    label: Text('PROCEED TO PAYMENT'.tr, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-                                    onPressed: () => context.go('/buyer/payment'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),

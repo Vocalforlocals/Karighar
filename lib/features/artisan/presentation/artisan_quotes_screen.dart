@@ -98,206 +98,19 @@ class _ArtisanQuotesScreenState extends State<ArtisanQuotesScreen> {
   }
 
   void _showCounterOfferDialog(BuildContext context, ChatThread thread) {
-    final qty = thread.requestedQuantity;
-    final currentTarget = thread.targetPricePerUnit;
-    double counterVal = currentTarget * 1.08; // default +8%
-    final priceController = TextEditingController(text: counterVal.toStringAsFixed(0));
-    final noteController = TextEditingController(text: 'Includes 100% Handloom GI Certification & wooden loom packing.');
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final parsedPrice = double.tryParse(priceController.text) ?? counterVal;
-            final totalCounter = parsedPrice * qty;
-
-            return Container(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.terracottaLight,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.handshake_rounded, color: AppColors.terracotta, size: 22),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Send Counter-Offer to Buyer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('${thread.buyerOrg} • $qty units requested', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Buyer Offered Price', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                          Text('₹${currentTarget.toStringAsFixed(0)} / unit', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        ],
-                      ),
-                      const Icon(Icons.arrow_forward_rounded, color: AppColors.textLight, size: 18),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('Proposed Deal Total', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                          Text('₹${totalCounter.toStringAsFixed(0)}', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.saffronDark)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Your Counter Unit Price (₹)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    onChanged: (val) => setModalState(() {}),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.currency_rupee, color: AppColors.terracotta, size: 18),
-                      hintText: 'Enter unit price',
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Quick percentage adjustment pills
-                  Row(
-                    children: [
-                      const Text('Quick Presets: ', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                      _presetChip('+5%', currentTarget * 1.05, priceController, setModalState),
-                      const SizedBox(width: 6),
-                      _presetChip('+10%', currentTarget * 1.10, priceController, setModalState),
-                      const SizedBox(width: 6),
-                      _presetChip('+15%', currentTarget * 1.15, priceController, setModalState),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Text('Reason / Note to Buyer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: noteController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      hintText: 'e.g. Includes silk mark seal, natural dye verification',
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.terracotta,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      icon: const Icon(Icons.send_rounded, size: 18),
-                      label: Text('Send Counter-Offer (₹${totalCounter.toStringAsFixed(0)})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      onPressed: () {
-                        final finalUnit = double.tryParse(priceController.text) ?? counterVal;
-                        final explanation = noteController.text.trim();
-                        final artisanName = ApiClient.currentUser?.fullName.isNotEmpty == true
-                            ? ApiClient.currentUser!.fullName
-                            : 'Master Artisan';
-
-                        ChatNegotiationService.instance.sendCounterOffer(
-                          threadId: thread.id,
-                          senderRole: 'artisan',
-                          senderName: artisanName,
-                          counterPrice: finalUnit,
-                          explanation: explanation,
-                        );
-
-                        if (thread.quoteId.isNotEmpty) {
-                          context.read<ArtisanBloc>().add(RespondToQuoteEvent(
-                                quoteId: thread.quoteId,
-                                responseStatus: 'countered',
-                                counterPrice: '₹${finalUnit.toStringAsFixed(0)} / unit ($explanation)',
-                              ));
-                        }
-
-                        Navigator.pop(ctx);
-                        _scrollToBottom();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Counter offer sent to ${thread.buyerOrg}!'), backgroundColor: AppColors.teal),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _presetChip(String label, double val, TextEditingController controller, StateSetter setModalState) {
-    return InkWell(
-      onTap: () {
-        setModalState(() {
-          controller.text = val.toStringAsFixed(0);
-        });
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppColors.terracottaLight,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.3)),
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.terracotta)),
+      builder: (ctx) => _CounterOfferSheet(
+        thread: thread,
+        onSent: _scrollToBottom,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 850;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AnimatedBuilder(
@@ -324,193 +137,70 @@ class _ArtisanQuotesScreenState extends State<ArtisanQuotesScreen> {
             orElse: () => threads.first,
           );
 
-          if (isDesktop) {
-            // DESKTOP SPLIT VIEW
-            return Row(
-              children: [
-                // Left Thread List (320px)
-                Container(
-                  width: 320,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(right: BorderSide(color: AppColors.cardBorder)),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+          return Column(
+            children: [
+              // Top Thread Strip (Easy 1-tap switching between buyers!)
+              Container(
+                height: 54,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+                ),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: threads.length,
+                  separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
+                  itemBuilder: (ctx, idx) {
+                    final t = threads[idx];
+                    final isSelected = t.id == activeThread.id;
+                    return InkWell(
+                      onTap: () {
+                        setState(() => _selectedThreadId = t.id);
+                        ChatNegotiationService.instance.markAsRead(t.id, 'artisan');
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.terracotta : AppColors.background,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: isSelected ? AppColors.terracotta : AppColors.cardBorder),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.chat_rounded, color: AppColors.terracotta, size: 20),
-                            const SizedBox(width: 8),
-                            Text('Buyer Negotiations', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 15)),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppColors.terracottaLight, borderRadius: BorderRadius.circular(10)),
-                              child: Text('${threads.length}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.terracotta)),
+                            Text(
+                              t.buyerOrg.length > 15 ? '${t.buyerOrg.substring(0, 15)}...' : t.buyerOrg,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                color: isSelected ? Colors.white : AppColors.textPrimary,
+                              ),
                             ),
+                            if (t.unreadCountArtisan > 0) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: threads.length,
-                          separatorBuilder: (ctx, idx) => const Divider(height: 1, color: AppColors.divider),
-                          itemBuilder: (ctx, idx) {
-                            final t = threads[idx];
-                            final isSelected = t.id == activeThread.id;
-                            return _buildThreadTile(t, isSelected);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-                // Right Chat Panel
-                Expanded(
-                  child: _buildChatPanel(context, activeThread),
-                ),
-              ],
-            );
-          } else {
-            // MOBILE ADAPTIVE VIEW
-            return Column(
-              children: [
-                // Top Thread Strip (Easy 1-tap switching between buyers!)
-                Container(
-                  height: 54,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
-                  ),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: threads.length,
-                    separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
-                    itemBuilder: (ctx, idx) {
-                      final t = threads[idx];
-                      final isSelected = t.id == activeThread.id;
-                      return InkWell(
-                        onTap: () {
-                          setState(() => _selectedThreadId = t.id);
-                          ChatNegotiationService.instance.markAsRead(t.id, 'artisan');
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.terracotta : AppColors.background,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: isSelected ? AppColors.terracotta : AppColors.cardBorder),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                t.buyerOrg.length > 15 ? '${t.buyerOrg.substring(0, 15)}...' : t.buyerOrg,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                                ),
-                              ),
-                              if (t.unreadCountArtisan > 0) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Active Chat Body
-                Expanded(
-                  child: _buildChatPanel(context, activeThread),
-                ),
-              ],
-            );
-          }
+              ),
+              // Active Chat Body
+              Expanded(
+                child: _buildChatPanel(context, activeThread),
+              ),
+            ],
+          );
         },
       ),
-    );
-  }
-
-  Widget _buildThreadTile(ChatThread t, bool isSelected) {
-    return InkWell(
-      onTap: () {
-        setState(() => _selectedThreadId = t.id);
-        ChatNegotiationService.instance.markAsRead(t.id, 'artisan');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        color: isSelected ? AppColors.terracottaLight.withValues(alpha: 0.4) : Colors.transparent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(t.buyerOrg, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 13, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-                _buildStatusPill(t.status),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(t.productTitle, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('₹${t.targetPricePerUnit.toStringAsFixed(0)}/u • ${t.requestedQuantity} pcs', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.tealDark)),
-                if (t.unreadCountArtisan > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: AppColors.terracotta, borderRadius: BorderRadius.circular(8)),
-                    child: Text('${t.unreadCountArtisan} new', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusPill(String status) {
-    Color bg = AppColors.background;
-    Color fg = AppColors.textSecondary;
-    String label = status.toUpperCase();
-
-    if (status == 'accepted') {
-      bg = AppColors.tealLight;
-      fg = AppColors.tealDark;
-      label = 'ACCEPTED';
-    } else if (status == 'countered') {
-      bg = const Color(0xFFFEF3C7);
-      fg = const Color(0xFF92400E);
-      label = 'COUNTERED';
-    } else {
-      bg = const Color(0xFFEFF6FF);
-      fg = const Color(0xFF1D4ED8);
-      label = 'PENDING';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
-      child: Text(label, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: fg)),
     );
   }
 
@@ -691,7 +381,7 @@ class _ArtisanQuotesScreenState extends State<ArtisanQuotesScreen> {
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * (MediaQuery.of(context).size.width > 800 ? 0.6 : 0.82)),
+        constraints: const BoxConstraints(maxWidth: 320),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isMe ? AppColors.terracotta : AppColors.surface,
@@ -818,3 +508,220 @@ class _ArtisanQuotesScreenState extends State<ArtisanQuotesScreen> {
     );
   }
 }
+
+class _CounterOfferSheet extends StatefulWidget {
+  final ChatThread thread;
+  final VoidCallback onSent;
+
+  const _CounterOfferSheet({
+    required this.thread,
+    required this.onSent,
+  });
+
+  @override
+  State<_CounterOfferSheet> createState() => _CounterOfferSheetState();
+}
+
+class _CounterOfferSheetState extends State<_CounterOfferSheet> {
+  late final TextEditingController _priceController;
+  late final TextEditingController _noteController;
+  late double _counterVal;
+
+  @override
+  void initState() {
+    super.initState();
+    _counterVal = widget.thread.targetPricePerUnit * 1.08;
+    _priceController = TextEditingController(text: _counterVal.toStringAsFixed(0));
+    _noteController = TextEditingController(text: 'Includes 100% Handloom GI Certification & wooden loom packing.');
+  }
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Widget _presetChip(String label, double val) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _priceController.text = val.toStringAsFixed(0);
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.terracottaLight,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.3)),
+        ),
+        child: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.terracotta)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final qty = widget.thread.requestedQuantity;
+    final currentTarget = widget.thread.targetPricePerUnit;
+    final parsedPrice = double.tryParse(_priceController.text) ?? _counterVal;
+    final totalCounter = parsedPrice * qty;
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.terracottaLight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.handshake_rounded, color: AppColors.terracotta, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Send Counter-Offer to Buyer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('${widget.thread.buyerOrg} • $qty units requested', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Buyer Offered Price', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                  Text('₹${currentTarget.toStringAsFixed(0)} / unit', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                ],
+              ),
+              const Icon(Icons.arrow_forward_rounded, color: AppColors.textLight, size: 18),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('Proposed Deal Total', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                  Text('₹${totalCounter.toStringAsFixed(0)}', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.saffronDark)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text('Your Counter Unit Price (₹)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.currency_rupee, color: AppColors.terracotta, size: 18),
+              hintText: 'Enter unit price',
+              filled: true,
+              fillColor: AppColors.background,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Text('Quick Presets: ', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+              _presetChip('+5%', currentTarget * 1.05),
+              const SizedBox(width: 6),
+              _presetChip('+10%', currentTarget * 1.10),
+              const SizedBox(width: 6),
+              _presetChip('+15%', currentTarget * 1.15),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text('Reason / Note to Buyer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _noteController,
+            maxLines: 2,
+            decoration: InputDecoration(
+              hintText: 'e.g. Includes silk mark seal, natural dye verification',
+              filled: true,
+              fillColor: AppColors.background,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.terracotta,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: Text('Send Counter-Offer (₹${totalCounter.toStringAsFixed(0)})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              onPressed: () {
+                final finalUnit = double.tryParse(_priceController.text) ?? _counterVal;
+                final explanation = _noteController.text.trim();
+                final artisanName = ApiClient.currentUser?.fullName.isNotEmpty == true
+                    ? ApiClient.currentUser!.fullName
+                    : 'Master Artisan';
+
+                ChatNegotiationService.instance.sendCounterOffer(
+                  threadId: widget.thread.id,
+                  senderRole: 'artisan',
+                  senderName: artisanName,
+                  counterPrice: finalUnit,
+                  explanation: explanation,
+                );
+
+                if (widget.thread.quoteId.isNotEmpty) {
+                  context.read<ArtisanBloc>().add(RespondToQuoteEvent(
+                        quoteId: widget.thread.quoteId,
+                        responseStatus: 'countered',
+                        counterPrice: '₹${finalUnit.toStringAsFixed(0)} / unit ($explanation)',
+                      ));
+                }
+
+                Navigator.pop(context);
+                widget.onSent();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Counter offer sent to ${widget.thread.buyerOrg}!'), backgroundColor: AppColors.teal),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

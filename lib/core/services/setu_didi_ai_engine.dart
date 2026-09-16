@@ -1,4 +1,5 @@
 import '../l10n/locale_manager.dart';
+import 'api_client.dart';
 
 class ProductDraft {
   final String id;
@@ -56,6 +57,88 @@ class SetuDidiResponse {
 }
 
 class SetuDidiAiEngine {
+  /// Live conversational AI call powered by Gemini AI with fallback to offline pattern matching
+  static Future<SetuDidiResponse> processVoiceCommandAsync(
+    String rawInput, {
+    AppLanguage lang = AppLanguage.hindi,
+    List<Map<String, String>>? conversationHistory,
+    Map<String, dynamic>? productContext,
+  }) async {
+    final query = rawInput.trim();
+    if (query.isEmpty) {
+      return processVoiceCommand(rawInput, lang: lang);
+    }
+
+    try {
+      final langName = LocaleManager.getLanguageName(lang);
+      final aiRes = await ApiClient.voiceConversation(
+        message: query,
+        conversationHistory: conversationHistory,
+        productContext: productContext,
+        language: langName,
+      );
+
+      final reply = aiRes['reply']?.toString() ?? '';
+      final replyEn = aiRes['replyEnglish']?.toString();
+      final intent = aiRes['intent']?.toString() ?? 'general_help';
+      final extracted = aiRes['extractedDetails'] as Map<String, dynamic>?;
+
+      if (intent == 'product_listing' || (extracted != null && extracted['title'] != null)) {
+        final title = extracted?['title']?.toString() ?? 'Handcrafted Artisan Product';
+        final price = (extracted?['suggestedPrice'] as num?)?.toDouble() ?? 2500.0;
+        final category = extracted?['category']?.toString() ?? 'Textiles & Weaves';
+        
+        final draft = ProductDraft(
+          id: 'prod_ai_${DateTime.now().millisecondsSinceEpoch}',
+          title: title,
+          category: category,
+          craftForm: 'Artisan Handcraft',
+          description: replyEn ?? reply,
+          descriptionHindi: reply,
+          price: price,
+          rawMaterialCost: price * 0.35,
+          estimatedLoomHours: 18,
+          tags: ['AI Cataloged', 'GI Eligible', category],
+          previewImage: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
+          provenanceHash: '0xGEMINI-${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}',
+        );
+
+        return SetuDidiResponse(
+          userQuery: query,
+          responseText: reply,
+          englishTranslation: replyEn,
+          actionRoute: '/artisan/studio',
+          isProductListing: true,
+          productDraft: draft,
+          actionLabel: 'Publish to Marketplace',
+        );
+      }
+
+      String actionRoute = '/artisan/studio';
+      String? actionLabel;
+      if (intent == 'order_query') {
+        actionRoute = '/artisan/orders';
+        actionLabel = 'View Orders';
+      } else if (intent == 'payment_query') {
+        actionRoute = '/artisan/earnings';
+        actionLabel = 'Check DBT Balance';
+      } else if (intent == 'scheme_query') {
+        actionRoute = '/artisan/credit';
+        actionLabel = 'View Vishwakarma Credit';
+      }
+
+      return SetuDidiResponse(
+        userQuery: query,
+        responseText: reply,
+        englishTranslation: replyEn,
+        actionRoute: actionRoute,
+        actionLabel: actionLabel,
+      );
+    } catch (_) {
+      return processVoiceCommand(rawInput, lang: lang);
+    }
+  }
+
   /// Analyzes any spoken or typed voice instruction and generates intelligent responses or craft listings.
   static SetuDidiResponse processVoiceCommand(String rawInput, {AppLanguage lang = AppLanguage.hindi}) {
     final query = rawInput.trim();

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/quote.dart';
+import 'api_client.dart';
 
 class NegotiationChatMessage {
   final String id;
@@ -275,6 +276,20 @@ class ChatNegotiationService extends ChangeNotifier {
     );
 
     notifyListeners();
+
+    // Asynchronous backend persistence
+    ApiClient.sendChatMessage(
+      threadId,
+      text: text,
+      senderRole: senderRole,
+      senderName: senderName,
+      messageType: messageType,
+      cardData: cardData,
+      isAiAssisted: isAiAssisted,
+    ).catchError((e) {
+      debugPrint('ChatNegotiationService.sendMessage sync notice: $e');
+      return null;
+    });
   }
 
   void sendCounterOffer({
@@ -318,6 +333,16 @@ class ChatNegotiationService extends ChangeNotifier {
     );
 
     notifyListeners();
+
+    // Asynchronous backend persistence
+    ApiClient.submitCounterOffer(
+      threadId,
+      counterPrice: counterPrice,
+      note: explanation,
+    ).catchError((e) {
+      debugPrint('ChatNegotiationService.sendCounterOffer sync notice: $e');
+      return null;
+    });
   }
 
   void acceptOffer({
@@ -360,6 +385,12 @@ class ChatNegotiationService extends ChangeNotifier {
     );
 
     notifyListeners();
+
+    // Asynchronous backend persistence
+    ApiClient.acceptNegotiationDeal(threadId).catchError((e) {
+      debugPrint('ChatNegotiationService.acceptOffer sync notice: $e');
+      return null;
+    });
   }
 
   void addThreadFromBulkQuote(BulkQuote quote) {
@@ -404,6 +435,21 @@ class ChatNegotiationService extends ChangeNotifier {
 
     _threads.insert(0, thread);
     notifyListeners();
+
+    // Asynchronous backend persistence
+    ApiClient.createChatThread({
+      'id': thread.id,
+      'quoteId': quote.id,
+      'buyerName': quote.buyerName,
+      'buyerOrg': quote.buyerOrg,
+      'productTitle': quote.productTitle,
+      'requestedQuantity': quote.requestedQuantity,
+      'targetPricePerUnit': quote.targetPricePerUnit,
+      'initialMessage': quote.notes,
+    }).catchError((e) {
+      debugPrint('ChatNegotiationService.createChatThread sync notice: $e');
+      return null;
+    });
   }
 
   void markAsRead(String threadId, String role) {

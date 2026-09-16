@@ -200,59 +200,90 @@ class _RfpTenderBoardScreenState extends State<RfpTenderBoardScreen> {
     );
   }
 
-  void _showPostRfpModal(BuildContext context) {
-    final titleController = TextEditingController(text: '300 Hand-Painted Terracotta Planters');
-    final qtyController = TextEditingController(text: '300');
-    final budgetController = TextEditingController(text: '850');
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
+  void _showPostRfpModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Publish Institutional Bulk Tender', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            const Text('Tenders will be distributed to verified artisan cluster SHGs under MoSJE supervision.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 16),
-            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Tender Title & Scope', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: TextField(controller: qtyController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()))),
-                const SizedBox(width: 12),
-                Expanded(child: TextField(controller: budgetController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Budget (₹/unit)', border: OutlineInputBorder()))),
-              ],
-            ),
-            const SizedBox(height: 16),
-            VKButton(
-              label: 'Broadcast to Craft Clusters',
-              icon: Icons.send_rounded,
-              variant: VKButtonVariant.primary,
-              onPressed: () {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tender published to Varanasi, Jaipur & Madhubani cluster guilds!'), backgroundColor: AppColors.teal),
-                );
-              },
-            ),
-          ],
-        ),
+      builder: (ctx) => const _PostRfpModalSheet(),
+    );
+  }
+}
+
+class _PostRfpModalSheet extends StatefulWidget {
+  const _PostRfpModalSheet();
+
+  @override
+  State<_PostRfpModalSheet> createState() => _PostRfpModalSheetState();
+}
+
+class _PostRfpModalSheetState extends State<_PostRfpModalSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _qtyController;
+  late final TextEditingController _budgetController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: '300 Hand-Painted Terracotta Planters');
+    _qtyController = TextEditingController(text: '300');
+    _budgetController = TextEditingController(text: '850');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _qtyController.dispose();
+    _budgetController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
-    ).then((_) {
-      titleController.dispose();
-      qtyController.dispose();
-      budgetController.dispose();
-    });
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Publish Institutional Bulk Tender', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          const Text('Tenders will be distributed to verified artisan cluster SHGs under MoSJE supervision.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          const SizedBox(height: 16),
+          TextField(controller: _titleController, decoration: const InputDecoration(labelText: 'Tender Title & Scope', border: OutlineInputBorder())),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: TextField(controller: _qtyController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()))),
+              const SizedBox(width: 12),
+              Expanded(child: TextField(controller: _budgetController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Budget (₹/unit)', border: OutlineInputBorder()))),
+            ],
+          ),
+          const SizedBox(height: 16),
+          VKButton(
+            label: 'Broadcast to Craft Clusters',
+            icon: Icons.send_rounded,
+            variant: VKButtonVariant.primary,
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Tender published to Varanasi, Jaipur & Madhubani cluster guilds!'), backgroundColor: AppColors.teal),
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -9,13 +9,13 @@ import '../../../core/models/product.dart';
 import '../../../core/services/api_client.dart';
 import '../../../core/services/speech/speech_service.dart';
 import '../../../core/services/sync_client_service.dart';
-import '../../../core/services/weave_vision_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/vk_audio_waveform.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
 import '../../../core/widgets/vk_image_studio_slider.dart';
+import '../../../core/widgets/vk_camera_studio_modal.dart';
 import '../../buyer/bloc/buyer_bloc.dart';
 import '../bloc/artisan_bloc.dart';
 
@@ -51,33 +51,37 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   final List<String?> _anglePhotoNames = [null, null, null, null];
   final Map<int, Map<String, dynamic>> _angleBackendResults = {};
   Map<String, dynamic>? _compositeInspectionResult;
+  Map<String, dynamic>? _aiPhotoAnalysis;
+  String? _aiVoiceReply;
+  String? _aiFollowUpQuestion;
+  final List<Map<String, String>> _studioVoiceHistory = [];
 
   // Demo craft presets for evaluation without hardware camera
   final List<Map<String, String>> _craftPresets = [
     {
       'title': 'Banarasi Silk Saree',
-      'raw': 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800&auto=format&fit=crop&q=80',
+      'raw': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
       'enhanced': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80',
       'craftForm': 'Banarasi Handloom Brocade',
       'category': 'Textiles & Weaves',
     },
     {
       'title': 'Madhubani Peacock Art',
-      'raw': 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80',
+      'raw': 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
       'enhanced': 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
       'craftForm': 'Mithila Folk Painting',
       'category': 'Folk Art & Paintings',
     },
     {
       'title': 'Jaipur Blue Pottery',
-      'raw': 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&auto=format&fit=crop&q=80',
+      'raw': 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
       'enhanced': 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
       'craftForm': 'Glazed Quartz Pottery',
       'category': 'Ceramics & Pottery',
     },
     {
       'title': 'Kashmiri Pashmina',
-      'raw': 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80',
+      'raw': 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=800&auto=format&fit=crop&q=80',
       'enhanced': 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=800&auto=format&fit=crop&q=80',
       'craftForm': 'Sozni Needle Embroidery',
       'category': 'Textiles & Weaves',
@@ -144,10 +148,39 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   double get _baseCost => _rawMaterialCost + _laborCost;
   double get _suggestedPrice => _baseCost * (1 + (_suggestedMarkup / 100));
 
+  // -------------------------------------------------------------
+  // PILLAR 4: KARIGHAR AI ASSISTANT COMPANION
+  // -------------------------------------------------------------
+  final String _selectedAssistantLang = 'hi';
+  String _selectedPriceTier = 'suggested';
+  bool _isHandmadeAuthenticConfirmed = true;
+
+  Future<void> _fetchAiAssistantStep(int stepIndex) async {
+    final stepKeys = ['01_artisan', '02_ai_assist', '03_creator_review', '04_publish'];
+    final currentKey = stepKeys[stepIndex.clamp(0, 3)];
+
+    await ApiClient.stepAiAssistant(
+      step: currentKey,
+      language: _selectedAssistantLang,
+      currency: 'INR',
+      data: {
+        'title': _titleController.text,
+        'description': _descController.text,
+        'category': _categoryController.text,
+        'raw_material_cost': _rawMaterialCost,
+        'labor_hours': _laborHours,
+        'hourly_rate': _hourlyRate,
+        'final_price': _suggestedPrice,
+        'authenticity_declaration': _isHandmadeAuthenticConfirmed,
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _analyzeCurrentAngleWithBackend();
+    _fetchAiAssistantStep(0);
   }
 
   @override
@@ -165,6 +198,32 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   // -------------------------------------------------------------
   // CAMERA & IMAGE PICKER HANDLERS
   // -------------------------------------------------------------
+  void _openCameraStudioModal() {
+    VKCameraStudioModal.show(
+      context,
+      initialAngleIndex: _selectedAngleIndex,
+      angleLabels: _angleLabels,
+      angleKeys: _angleKeys,
+      anglePhotoBytes: _anglePhotoBytes,
+      currentPreset: _craftPresets[_selectedPresetIndex],
+      onPhotoCaptured: (angleIdx, bytes, fileName) async {
+        setState(() {
+          _selectedAngleIndex = angleIdx;
+          if (bytes.isNotEmpty) {
+            _anglePhotoBytes[angleIdx] = bytes;
+          }
+          _anglePhotoNames[angleIdx] = fileName;
+          _isProcessingAI = true;
+        });
+        await _analyzeCurrentAngleWithBackend();
+        if (bytes.isNotEmpty) {
+          await _runGeminiPhotoIdentification(bytes);
+        }
+        if (mounted) setState(() => _isProcessingAI = false);
+      },
+    );
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       XFile? file;
@@ -224,6 +283,9 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
           craftPreset: _craftPresets[_selectedPresetIndex]['title'],
           craftCategory: _categoryController.text,
         );
+        if (!mounted) return;
+
+        await _runGeminiPhotoIdentification(bytes);
         if (!mounted) return;
 
         setState(() {
@@ -297,6 +359,77 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
     } catch (_) {}
   }
 
+  Future<void> _runGeminiPhotoIdentification(Uint8List bytes) async {
+    try {
+      final base64Img = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      final res = await ApiClient.analyzeProductPhoto(
+        imageBase64: base64Img,
+        language: _selectedVoiceLang,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _aiPhotoAnalysis = res;
+
+        final title = res['titleEnglish']?.toString() ?? res['titleHindi']?.toString();
+        if (title != null && title.isNotEmpty && !title.toLowerCase().contains('unidentified')) {
+          _titleController.text = title;
+        }
+        final cat = res['category']?.toString();
+        if (cat != null && cat.isNotEmpty) {
+          _categoryController.text = cat;
+        }
+        final craft = res['craftForm']?.toString();
+        if (craft != null && craft.isNotEmpty) {
+          _craftController.text = craft;
+        }
+        final desc = res['descriptionEnglish']?.toString();
+        if (desc != null && desc.isNotEmpty && !desc.toLowerCase().contains('unclear')) {
+          _descController.text = desc;
+        }
+        final sugPrice = (res['suggestedPrice'] as num?)?.toDouble();
+        if (sugPrice != null && sugPrice > 0) {
+          _rawMaterialCost = (sugPrice * 0.35).roundToDouble();
+          _laborHours = 24;
+        }
+        final tagsList = res['tags'];
+        if (tagsList is List && tagsList.isNotEmpty) {
+          for (final t in tagsList) {
+            final tagStr = t.toString();
+            if (!_tags.contains(tagStr)) {
+              _tags.add(tagStr);
+            }
+          }
+        }
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.tealDark,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            content: Row(
+              children: [
+                const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '✨ AI ने शिल्प पहचाना: ${_titleController.text}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Gemini photo identification error: $e');
+    }
+  }
+
   Future<void> _loadCompositeInspection() async {
     final angles = List.generate(4, (i) {
       return {
@@ -348,20 +481,51 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
       _isRecording = true;
       _recordingSeconds = 0;
       _recordedTranscript = '';
+      _aiVoiceReply = null;
+      _aiFollowUpQuestion = null;
     });
 
+    String langCode = 'hi-IN';
+    if (_selectedVoiceLang == 'தமிழ்') langCode = 'ta-IN';
+    if (_selectedVoiceLang == 'English') langCode = 'en-IN';
+    if (_selectedVoiceLang == 'বাংলা') langCode = 'bn-IN';
+
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _recordingSeconds++;
-      });
-      if (_recordingSeconds >= 15) {
+      if (mounted) {
+        setState(() {
+          _recordingSeconds++;
+        });
+      }
+      if (_recordingSeconds >= 30) {
         _stopRecording();
       }
     });
+
+    SpeechService.startListening(
+      lang: langCode,
+      onResult: (text, isFinal) {
+        if (!mounted) return;
+        setState(() {
+          _recordedTranscript = text;
+        });
+        if (isFinal && text.trim().isNotEmpty) {
+          _stopRecording();
+        }
+      },
+      onError: (err) {
+        debugPrint('Studio speech recognition: $err');
+      },
+      onEnd: () {
+        if (_isRecording && _recordedTranscript.isNotEmpty) {
+          _stopRecording();
+        }
+      },
+    );
   }
 
   Future<void> _stopRecording() async {
     _recordingTimer?.cancel();
+    SpeechService.stopListening();
     setState(() {
       _isRecording = false;
     });
@@ -371,8 +535,82 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
       _populateDemoTranscript();
     }
 
-    // Call Bhashini AI Metadata Extraction
-    await _extractBhashiniMetadata();
+    // Call Gemini AI Voice Assistant for real conversational response & extraction
+    await _processVoiceWithGeminiAI();
+  }
+
+  Future<void> _processVoiceWithGeminiAI() async {
+    if (_recordedTranscript.trim().isEmpty) return;
+    if (!mounted) return;
+
+    setState(() => _isProcessingAI = true);
+    _studioVoiceHistory.add({'role': 'user', 'text': _recordedTranscript.trim()});
+
+    final currentProduct = {
+      'title': _titleController.text,
+      'category': _categoryController.text,
+      'craftForm': _craftController.text,
+      'description': _descController.text,
+      'price': _suggestedPrice,
+      'rawMaterialCost': _rawMaterialCost,
+      'laborHours': _laborHours,
+    };
+
+    try {
+      final res = await ApiClient.voiceConversation(
+        message: _recordedTranscript.trim(),
+        conversationHistory: _studioVoiceHistory,
+        productContext: currentProduct,
+        language: _selectedVoiceLang,
+      );
+
+      final reply = res['reply']?.toString() ?? '';
+      final followUp = res['followUpQuestion']?.toString();
+      final extracted = res['extractedDetails'] as Map<String, dynamic>?;
+
+      _studioVoiceHistory.add({'role': 'assistant', 'text': reply});
+
+      if (!mounted) return;
+      setState(() {
+        _aiVoiceReply = reply;
+        _aiFollowUpQuestion = followUp;
+
+        if (extracted != null) {
+          if (extracted['title'] != null && extracted['title'].toString().isNotEmpty) {
+            _titleController.text = extracted['title'].toString();
+          }
+          if (extracted['category'] != null && extracted['category'].toString().isNotEmpty) {
+            _categoryController.text = extracted['category'].toString();
+          }
+          if (extracted['suggestedPrice'] != null) {
+            final p = (extracted['suggestedPrice'] as num).toDouble();
+            _rawMaterialCost = (p * 0.35).roundToDouble();
+            _laborHours = ((p * 0.65) / (_hourlyRate * 1.25)).roundToDouble();
+          }
+          if (extracted['rawMaterialCost'] != null) {
+            _rawMaterialCost = (extracted['rawMaterialCost'] as num).toDouble();
+          }
+          if (extracted['estimatedHours'] != null) {
+            _laborHours = (extracted['estimatedHours'] as num).toDouble();
+          }
+        }
+
+        if (_descController.text.length < 25 && reply.isNotEmpty) {
+          _descController.text = reply;
+        }
+      });
+
+      String langCode = 'hi-IN';
+      if (_selectedVoiceLang == 'தமிழ்') langCode = 'ta-IN';
+      if (_selectedVoiceLang == 'English') langCode = 'en-IN';
+      if (_selectedVoiceLang == 'বাংলা') langCode = 'bn-IN';
+      SpeechService.speak(reply, lang: langCode);
+    } catch (e) {
+      debugPrint('Voice Gemini error: $e');
+      await _extractBhashiniMetadata();
+    } finally {
+      if (mounted) setState(() => _isProcessingAI = false);
+    }
   }
 
   void _populateDemoTranscript() {
@@ -476,6 +714,7 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
         _loadCompositeInspection();
       }
       setState(() => _currentStep++);
+      _fetchAiAssistantStep(_currentStep);
     } else {
       _publishProduct();
     }
@@ -484,6 +723,7 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
+      _fetchAiAssistantStep(_currentStep);
     }
   }
 
@@ -524,6 +764,22 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
     context.read<ArtisanBloc>().add(CreateProductEvent(newProduct));
     context.read<BuyerBloc>().add(AddMarketplaceProductEvent(newProduct));
     SyncClientService().broadcastNewProduct(newProduct);
+
+    // Multi-channel publishing (B2C, B2B wholesale, GeM) via Karighar AI Assistant
+    ApiClient.stepAiAssistant(
+      step: '04_publish',
+      language: _selectedAssistantLang,
+      currency: 'INR',
+      data: {
+        'title': _titleController.text.trim(),
+        'description': _descController.text.trim(),
+        'category': _categoryController.text.trim(),
+        'final_price': _suggestedPrice,
+        'artisanId': ApiClient.currentUser?.id ?? 'art_ramdev_01',
+        'artisanName': ApiClient.currentUser?.fullName ?? 'Ramdev Varma',
+        'authenticity_declaration': _isHandmadeAuthenticConfirmed,
+      },
+    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -720,7 +976,7 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
                 label: 'Take Camera Photo'.tr,
                 icon: Icons.camera_alt_rounded,
                 variant: VKButtonVariant.primary,
-                onPressed: () => _pickImage(ImageSource.camera),
+                onPressed: _openCameraStudioModal,
               ),
             ),
             const SizedBox(width: 12),
@@ -865,6 +1121,11 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
               afterImageUrl: preset['enhanced']!,
               customBytes: currentAngleBytes,
               height: 320,
+              enableSuperResolution: _enableSuperResolution,
+              enableStudioLighting: _enableStudioLighting,
+              enableColorCalibration: _enableColorCalibration,
+              enableBackgroundDeClutter: _enableBackgroundDeClutter,
+              isMacroWeaveView: _selectedAngleIndex == 1,
             ),
             if (_isProcessingAI)
               Positioned.fill(
@@ -947,7 +1208,140 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 14),
+
+        // Real Gemini Vision Identification & Photo Quality Guidance
+        if (_aiPhotoAnalysis != null) ...[
+          const SizedBox(height: 14),
+          _buildAiProductIdentificationCard(),
+        ],
       ],
+    );
+  }
+
+  Widget _buildAiProductIdentificationCard() {
+    if (_aiPhotoAnalysis == null) return const SizedBox.shrink();
+
+    final data = _aiPhotoAnalysis!;
+    final titleEn = data['titleEnglish']?.toString() ?? '';
+    final titleHi = data['titleHindi']?.toString() ?? '';
+    final category = data['category']?.toString() ?? '';
+    final craftForm = data['craftForm']?.toString() ?? '';
+    final qualityScore = (((data['photoQualityScore'] as num?)?.toDouble() ?? 0.85) * 100).clamp(0, 100).toDouble();
+    final confidence = (((data['confidenceScore'] as num?)?.toDouble() ?? 0.90) * 100).clamp(0, 100).toDouble();
+    final tips = (data['photoTips'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    final sugPrice = (data['suggestedPrice'] as num?)?.toDouble() ?? 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1B5E20).withValues(alpha: 0.08),
+            const Color(0xFF004D40).withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.3)),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Gemini Vision Craft Detection',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B5E20)),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${confidence.toStringAsFixed(0)}% Match',
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            titleEn.isNotEmpty ? titleEn : titleHi,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+          ),
+          if (titleHi.isNotEmpty && titleHi != titleEn) ...[
+            const SizedBox(height: 2),
+            Text(
+              titleHi,
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              if (category.isNotEmpty)
+                VKBadge(label: category, type: VKBadgeType.info),
+              if (craftForm.isNotEmpty)
+                VKBadge(label: craftForm, type: VKBadgeType.verified),
+              if (sugPrice > 0)
+                VKBadge(label: '₹${sugPrice.toStringAsFixed(0)} Fair Price', type: VKBadgeType.ai),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+
+          // Photo Quality Assessment & Improvement Tips
+          Row(
+            children: [
+              const Icon(Icons.photo_camera_rounded, size: 14, color: AppColors.teal),
+              const SizedBox(width: 6),
+              Text(
+                'Photo Quality: ${qualityScore.toStringAsFixed(0)}%',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.tealDark),
+              ),
+            ],
+          ),
+          if (tips.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            ...tips.map((tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('💡 ', style: TextStyle(fontSize: 11)),
+                  Expanded(
+                    child: Text(
+                      tip,
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ],
+      ),
     );
   }
 
@@ -1178,6 +1572,142 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
           const SizedBox(height: 14),
         ],
 
+        // Setu Didi Gemini Conversational AI Response & Follow-Up
+        if (_aiVoiceReply != null) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.saffronLight.withValues(alpha: 0.35),
+                  Colors.amber.shade50.withValues(alpha: 0.6),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.saffron.withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: AppColors.saffron,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'सेतु दीदी (AI Companion):',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.saffronDark),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: () {
+                        String langCode = 'hi-IN';
+                        if (_selectedVoiceLang == 'தமிழ்') langCode = 'ta-IN';
+                        if (_selectedVoiceLang == 'English') langCode = 'en-IN';
+                        if (_selectedVoiceLang == 'বাংলা') langCode = 'bn-IN';
+                        SpeechService.speak(_aiVoiceReply!, lang: langCode);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.saffron.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.volume_up_rounded, size: 12, color: AppColors.saffronDark),
+                            SizedBox(width: 4),
+                            Text('Replay', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.saffronDark)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _aiVoiceReply!,
+                  style: const TextStyle(fontSize: 12, height: 1.4, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                ),
+                if (_aiFollowUpQuestion != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.saffron),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.help_outline_rounded, color: AppColors.saffron, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'दीदी का सवाल (उत्तर देने के लिए बटन दबाएं):',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.saffronDark),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _aiFollowUpQuestion!,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: _toggleRecording,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _isRecording ? Colors.redAccent : AppColors.saffron,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (_isRecording ? Colors.redAccent : AppColors.saffron).withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_isRecording ? Icons.stop_rounded : Icons.mic_rounded, color: Colors.white, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _isRecording ? 'रोकें'.tr : 'जवाब दें'.tr,
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+
         // Extracted Structured Metadata Fields
         VKCard(
           child: Column(
@@ -1386,6 +1916,8 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
           ),
         ),
         const SizedBox(height: 16),
+        _buildLivingWageTierSelector(),
+        const SizedBox(height: 16),
 
         // Cost Breakdown Sliders
         VKCard(
@@ -1469,13 +2001,137 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
     );
   }
 
+  Widget _buildLivingWageTierSelector() {
+    final lowPrice = (_baseCost * 1.10).round();
+    final suggestedPrice = (_baseCost * 1.25).round();
+    final premiumPrice = (_baseCost * 1.45).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Fair Living-Wage Price Tiers',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const Text(
+              'Labor + Material Dignity',
+              style: TextStyle(fontSize: 11, color: AppColors.teal, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTierCard(
+                tierKey: 'low',
+                title: 'Low (10%)',
+                price: lowPrice,
+                subtitle: 'Base dignity margin',
+                isSelected: _selectedPriceTier == 'low',
+                onTap: () {
+                  setState(() {
+                    _selectedPriceTier = 'low';
+                    _suggestedMarkup = 10;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildTierCard(
+                tierKey: 'suggested',
+                title: 'Suggested (25%)',
+                price: suggestedPrice,
+                subtitle: 'Fair wage + growth',
+                isRecommended: true,
+                isSelected: _selectedPriceTier == 'suggested',
+                onTap: () {
+                  setState(() {
+                    _selectedPriceTier = 'suggested';
+                    _suggestedMarkup = 25;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildTierCard(
+                tierKey: 'premium',
+                title: 'Premium (45%)',
+                price: premiumPrice,
+                subtitle: 'Heritage collector',
+                isSelected: _selectedPriceTier == 'premium',
+                onTap: () {
+                  setState(() {
+                    _selectedPriceTier = 'premium';
+                    _suggestedMarkup = 45;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTierCard({
+    required String tierKey,
+    required String title,
+    required int price,
+    required String subtitle,
+    bool isRecommended = false,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isRecommended ? AppColors.tealLight.withValues(alpha: 0.4) : AppColors.surface)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? (isRecommended ? AppColors.teal : AppColors.saffron) : AppColors.cardBorder,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            if (isRecommended)
+              Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: AppColors.teal,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('RECOMMENDED', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            Text(title, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            const SizedBox(height: 2),
+            Text('₹$price', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: isRecommended ? AppColors.teal : AppColors.textPrimary)),
+            const SizedBox(height: 2),
+            Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 8, color: AppColors.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+
   // =============================================================
   // STEP 4: FINAL REVIEW & PROVENANCE SEAL
   // =============================================================
   Widget _buildStep4Review() {
     final preset = _craftPresets[_selectedPresetIndex];
     final currentAngleBytes = _anglePhotoBytes[_selectedAngleIndex];
-    final weaveMetric = WeaveVisionService.analyzeCraftImage(preset['enhanced']!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1558,94 +2214,180 @@ class _StudioWizardScreenState extends State<StudioWizardScreen> {
                   ),
                 ],
               ),
-              const Divider(height: 20),
-
-              // Computer Vision Weave Quality & Bhashini Telemetry Box
-              Builder(builder: (context) {
-                final comp = _compositeInspectionResult;
-                final compSummary = comp?['inspectionSummary'] as Map<String, dynamic>?;
-                final epi = compSummary?['endsPerInch'] ?? weaveMetric.warpCount;
-                final ppi = compSummary?['picksPerInch'] ?? weaveMetric.weftCount;
-                final sym = compSummary?['knotSymmetry'] ?? weaveMetric.symmetryScore;
-                final grade = comp?['giCertificationGrade'] ?? weaveMetric.grade;
-                final hash = comp?['provenanceHash'] ?? weaveMetric.inspectionHash;
-
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.biotech_rounded, size: 16, color: AppColors.teal),
-                              const SizedBox(width: 6),
-                              Text('NEURAL WEAVE INSPECTION'.tr,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.tealDark)),
-                            ],
-                          ),
-                          VKBadge(label: grade.toString(), type: VKBadgeType.verified),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Warp/Weft: $epi EPI × $ppi PPI',
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                          Text('Symmetry: $sym%',
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.teal)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Bhashini Dialect: $_selectedVoiceLang (98.8% Confidence ASR)',
-                              style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '4-Angle 360° Verified',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.tealDark),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Digital Provenance:', style: TextStyle(fontSize: 9, color: AppColors.textLight)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              hash.toString().length > 24 ? '${hash.toString().substring(0, 24)}...' : hash.toString(),
-                              textAlign: TextAlign.end,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 9, fontFamily: 'monospace', color: AppColors.textSecondary),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
             ],
           ),
         ),
+        const SizedBox(height: 14),
+        _buildAuthenticityScreeningCard(),
+        const SizedBox(height: 14),
+        _buildMultiChannelDistributionCard(),
       ],
+    );
+  }
+
+  Widget _buildAuthenticityScreeningCard() {
+    return VKCard(
+      borderColor: AppColors.teal.withValues(alpha: 0.4),
+      color: AppColors.tealLight.withValues(alpha: 0.25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.verified_user_rounded, color: AppColors.teal, size: 20),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Authenticity & Handmade Screening',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+              ),
+              VKBadge(
+                label: _isHandmadeAuthenticConfirmed ? 'Verified' : 'Pending',
+                type: _isHandmadeAuthenticConfirmed ? VKBadgeType.verified : VKBadgeType.warning,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Checkbox(
+                value: _isHandmadeAuthenticConfirmed,
+                activeColor: AppColors.teal,
+                onChanged: (val) {
+                  setState(() => _isHandmadeAuthenticConfirmed = val ?? true);
+                },
+              ),
+              const Expanded(
+                child: Text(
+                  'I declare this craft is 100% authentic, hand-loomed/handmade by myself/my guild without industrial powerloom replication.',
+                  style: TextStyle(fontSize: 11, height: 1.3, color: AppColors.textPrimary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.videocam_rounded, color: AppColors.saffron, size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '5-Second Process Video Screening: Attached & Encrypted into Provenance Block.',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  ),
+                ),
+                Icon(Icons.check_circle_rounded, color: AppColors.teal, size: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiChannelDistributionCard() {
+    return VKCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.hub_rounded, color: AppColors.saffron, size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Multi-Channel Market Distribution',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Your single craft listing will automatically be published to all 3 commercial pipelines:',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
+          _buildChannelPill(
+            icon: Icons.storefront_rounded,
+            title: 'B2C Direct Marketplace',
+            desc: 'Retail buyers with 0% middleman commission & direct chat',
+            badge: 'Active',
+            badgeColor: AppColors.teal,
+          ),
+          const SizedBox(height: 8),
+          _buildChannelPill(
+            icon: Icons.local_shipping_rounded,
+            title: 'B2B Wholesale Hub (Export)',
+            desc: 'Bulk quotes with luxury hotels, FabIndia, and international exporters',
+            badge: 'Active',
+            badgeColor: AppColors.saffron,
+          ),
+          const SizedBox(height: 8),
+          _buildChannelPill(
+            icon: Icons.account_balance_rounded,
+            title: 'Government e-Marketplace (GeM)',
+            desc: 'Public procurement for Ministry & PSU gifting tenders (#26090)',
+            badge: 'Active',
+            badgeColor: AppColors.tealDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChannelPill({
+    required IconData icon,
+    required String title,
+    required String desc,
+    required String badge,
+    required Color badgeColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, size: 18, color: badgeColor),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const SizedBox(height: 2),
+                Text(desc, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(badge, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: badgeColor)),
+          ),
+        ],
+      ),
     );
   }
 

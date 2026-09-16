@@ -61,6 +61,8 @@ class _SetuDidiVoiceContentState extends State<_SetuDidiVoiceContent> with Singl
   bool _isTranscriptFinal = false;
   bool _isPublishing = false;
   bool _publishedSuccess = false;
+  bool _isProcessingAi = false;
+  final List<Map<String, String>> _conversationHistory = [];
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocus = FocusNode();
@@ -165,15 +167,30 @@ class _SetuDidiVoiceContentState extends State<_SetuDidiVoiceContent> with Singl
   }
 
   /// Process a voice or typed command through SetuDidiAiEngine
-  void _processCommand(String input) {
+  Future<void> _processCommand(String input) async {
     if (input.trim().isEmpty) return;
 
-    final response = SetuDidiAiEngine.processVoiceCommand(input, lang: _currentLanguage);
+    setState(() {
+      _isProcessingAi = true;
+      _lastResponse = null;
+    });
 
+    _conversationHistory.add({'role': 'user', 'text': input.trim()});
+
+    final response = await SetuDidiAiEngine.processVoiceCommandAsync(
+      input,
+      lang: _currentLanguage,
+      conversationHistory: _conversationHistory,
+    );
+
+    _conversationHistory.add({'role': 'assistant', 'text': response.responseText});
+
+    if (!mounted) return;
     setState(() {
       _lastResponse = response;
       _publishedSuccess = false;
       _isPublishing = false;
+      _isProcessingAi = false;
     });
 
     // Speak the response
@@ -433,6 +450,34 @@ class _SetuDidiVoiceContentState extends State<_SetuDidiVoiceContent> with Singl
                 const SizedBox(height: 12),
 
                 // ─── RESPONSE / PRODUCT PREVIEW ───
+                if (_isProcessingAi) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.saffronLight.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.saffron.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.saffron),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'सेतु दीदी सोच रही हैं... (Gemini AI)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.saffronDark),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
                 if (_lastResponse != null) ...[
                   if (_lastResponse!.isProductListing && _lastResponse!.productDraft != null)
                     _buildProductListingPreview(_lastResponse!.productDraft!)

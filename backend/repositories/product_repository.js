@@ -78,7 +78,7 @@ class ProductRepository {
       images: Array.isArray(data.images) && data.images.length > 0 ? data.images : [
         'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800'
       ],
-      rawImage: data.rawImage || 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800',
+      rawImage: data.rawImage || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
       price,
       estimatedHours: Number(data.estimatedHours) || 48,
       isGICertified: data.isGICertified !== false,

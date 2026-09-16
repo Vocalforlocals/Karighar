@@ -123,231 +123,238 @@ class _ArtisanShellScreenState extends State<ArtisanShellScreen> {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
     final width = MediaQuery.of(context).size.width;
-    final isDesktop = width >= 900;
     final user = ApiClient.currentUser;
     final artisanName = user?.fullName ?? 'Master Ramdev Varma';
     final cluster = user?.clusterLocation ?? 'Varanasi Cluster #370';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // ================================================================
-          // UNIFIED SELLER HEADER (MATCHING BUYER STANDARD)
-          // ================================================================
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(bottom: BorderSide(color: AppColors.cardBorder, width: 1)),
-              boxShadow: AppColors.cardShadow,
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 20 : 12, vertical: 10),
-                child: Row(
-                  children: [
-                    // Brand Logo with Studio Badge
-                    _buildBrandLogo(isCompact: !isDesktop),
-                    const SizedBox(width: 12),
+    Widget buildShellContent() {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Column(
+          children: [
+            // ================================================================
+            // UNIFIED SELLER HEADER (MATCHING BUYER STANDARD)
+            // ================================================================
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(bottom: BorderSide(color: AppColors.cardBorder, width: 1)),
+                boxShadow: AppColors.cardShadow,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      // Brand Logo with Studio Badge
+                      _buildBrandLogo(isCompact: true),
 
-                    // Cluster indicator (Desktop)
-                    if (isDesktop) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.cardBorder),
+                      const Spacer(),
+
+                      // Language Selector Dropdown
+                      _buildLanguageSelector(isCompact: true),
+                      const SizedBox(width: 8),
+
+                      // 1-TAP SWITCH TO BUYER MARKETPLACE (SELLERS CAN ACCESS BOTH)
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.emeraldDeep,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.location_on_rounded, color: AppColors.saffron, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              cluster,
-                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                        icon: const Icon(Icons.storefront_rounded, size: 16),
+                        label: Text(
+                          'Buyer Shop'.tr,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () => context.go('/buyer'),
+                      ),
+                      const SizedBox(width: 6),
+
+                      // Artisan Profile & Logout Dropdown
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.account_circle_rounded, color: AppColors.saffronDark, size: 26),
+                        tooltip: 'Artisan Account'.tr,
+                        onSelected: (val) {
+                          if (val == 'buyer') {
+                            context.go('/buyer');
+                          } else if (val == 'logout') {
+                            ApiClient.logout();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Logged out of Artisan Studio'.tr), backgroundColor: AppColors.textPrimary),
+                            );
+                            context.go('/buyer/profile');
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            enabled: false,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(artisanName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                Text(cluster, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                const SizedBox(height: 2),
+                                const Text('Shilp Guru / National Awardee', style: TextStyle(fontSize: 10, color: AppColors.saffronDark, fontWeight: FontWeight.bold)),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const PopupMenuDivider(),
+                          PopupMenuItem(
+                            value: 'buyer',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.shopping_bag_rounded, color: AppColors.emeraldDeep, size: 18),
+                                const SizedBox(width: 10),
+                                Text('View Buyer Marketplace'.tr),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'logout',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+                                const SizedBox(width: 10),
+                                Text('Log Out'.tr, style: const TextStyle(color: Colors.redAccent)),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-
-                    const Spacer(),
-
-                    // Language Selector Dropdown
-                    _buildLanguageSelector(isCompact: !isDesktop),
-                    const SizedBox(width: 8),
-
-                    // 1-TAP SWITCH TO BUYER MARKETPLACE (SELLERS CAN ACCESS BOTH)
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.emeraldDeep,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 14 : 10, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        elevation: 0,
-                      ),
-                      icon: const Icon(Icons.storefront_rounded, size: 16),
-                      label: Text(
-                        isDesktop ? 'Buyer Marketplace'.tr : 'Buyer Shop'.tr,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                      onPressed: () => context.go('/buyer'),
-                    ),
-                    const SizedBox(width: 6),
-
-                    // Artisan Profile & Logout Dropdown
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.account_circle_rounded, color: AppColors.saffronDark, size: 26),
-                      tooltip: 'Artisan Account'.tr,
-                      onSelected: (val) {
-                        if (val == 'buyer') {
-                          context.go('/buyer');
-                        } else if (val == 'logout') {
-                          ApiClient.logout();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Logged out of Artisan Studio'.tr), backgroundColor: AppColors.textPrimary),
-                          );
-                          context.go('/buyer/profile');
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          enabled: false,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(artisanName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                              Text(cluster, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                              const SizedBox(height: 2),
-                              const Text('Shilp Guru / National Awardee', style: TextStyle(fontSize: 10, color: AppColors.saffronDark, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'buyer',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.shopping_bag_rounded, color: AppColors.emeraldDeep, size: 18),
-                              const SizedBox(width: 10),
-                              Text('View Buyer Marketplace'.tr),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'logout',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
-                              const SizedBox(width: 10),
-                              Text('Log Out'.tr, style: const TextStyle(color: Colors.redAccent)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Main View (Child Screen)
-          Expanded(child: widget.child),
-        ],
-      ),
-
-      // Bottom Navigation Bar with Center + FAB
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
-          boxShadow: AppColors.cardShadow,
+            // Main View (Child Screen)
+            Expanded(child: widget.child),
+          ],
         ),
-        child: SafeArea(
-          child: AnimatedBuilder(
-            animation: ChatNegotiationService.instance,
-            builder: (context, _) {
-              final unreadCount = ChatNegotiationService.instance.threads.fold<int>(
-                0,
-                (sum, t) => sum + t.unreadCountArtisan,
-              );
 
-              return SizedBox(
-                height: 64,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Dashboard
-                    _buildNavItem(
-                      icon: selectedIndex == 0 ? Icons.dashboard_rounded : Icons.dashboard_outlined,
-                      label: 'Dashboard'.tr,
-                      isSelected: selectedIndex == 0,
-                      onTap: () => context.go('/artisan'),
-                    ),
-                    // Orders
-                    _buildNavItem(
-                      icon: selectedIndex == 1 ? Icons.precision_manufacturing_rounded : Icons.precision_manufacturing_outlined,
-                      label: 'Orders'.tr,
-                      isSelected: selectedIndex == 1,
-                      onTap: () => context.go('/artisan/orders'),
-                    ),
-                    // Center + FAB (AI Studio / Add Product)
-                    Tooltip(
-                      message: 'Add Craft (AI Studio)'.tr,
-                      child: GestureDetector(
-                        onTap: () => context.go('/artisan/add-product'),
-                        onLongPress: () => _showAddMenu(context),
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppColors.saffron, Color(0xFFE65100)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            shape: BoxShape.circle,
-                            border: selectedIndex == 2
-                                ? Border.all(color: AppColors.zariGold, width: 2.5)
-                                : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.saffron.withValues(alpha: selectedIndex == 2 ? 0.6 : 0.35),
-                                blurRadius: selectedIndex == 2 ? 16 : 10,
-                                offset: const Offset(0, 4),
+        // Bottom Navigation Bar with Center + FAB
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
+            boxShadow: AppColors.cardShadow,
+          ),
+          child: SafeArea(
+            child: AnimatedBuilder(
+              animation: ChatNegotiationService.instance,
+              builder: (context, _) {
+                final unreadCount = ChatNegotiationService.instance.threads.fold<int>(
+                  0,
+                  (sum, t) => sum + t.unreadCountArtisan,
+                );
+
+                return SizedBox(
+                  height: 64,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Dashboard
+                      _buildNavItem(
+                        icon: selectedIndex == 0 ? Icons.dashboard_rounded : Icons.dashboard_outlined,
+                        label: 'Dashboard'.tr,
+                        isSelected: selectedIndex == 0,
+                        onTap: () => context.go('/artisan'),
+                      ),
+                      // Orders
+                      _buildNavItem(
+                        icon: selectedIndex == 1 ? Icons.precision_manufacturing_rounded : Icons.precision_manufacturing_outlined,
+                        label: 'Orders'.tr,
+                        isSelected: selectedIndex == 1,
+                        onTap: () => context.go('/artisan/orders'),
+                      ),
+                      // Center + FAB (AI Studio / Add Product)
+                      Tooltip(
+                        message: 'Add Craft (AI Studio)'.tr,
+                        child: GestureDetector(
+                          onTap: () => context.go('/artisan/add-product'),
+                          onLongPress: () => _showAddMenu(context),
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppColors.saffron, Color(0xFFE65100)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            ],
+                              shape: BoxShape.circle,
+                              border: selectedIndex == 2
+                                  ? Border.all(color: AppColors.zariGold, width: 2.5)
+                                  : null,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.saffron.withValues(alpha: selectedIndex == 2 ? 0.6 : 0.35),
+                                  blurRadius: selectedIndex == 2 ? 16 : 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.add_rounded, color: Colors.white, size: 32),
                           ),
-                          child: const Icon(Icons.add_rounded, color: Colors.white, size: 32),
                         ),
                       ),
-                    ),
-                    // Buyer Chat
-                    _buildNavItem(
-                      icon: selectedIndex == 3 ? Icons.chat_bubble_rounded : Icons.chat_bubble_outline_rounded,
-                      label: 'Buyer Chat'.tr,
-                      isSelected: selectedIndex == 3,
-                      onTap: () => context.go('/artisan/chat'),
-                      badgeCount: unreadCount,
-                    ),
-                    // Earnings
-                    _buildNavItem(
-                      icon: selectedIndex == 4 ? Icons.account_balance_wallet_rounded : Icons.account_balance_wallet_outlined,
-                      label: 'Earnings'.tr,
-                      isSelected: selectedIndex == 4,
-                      onTap: () => context.go('/artisan/earnings'),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      // Buyer Chat
+                      _buildNavItem(
+                        icon: selectedIndex == 3 ? Icons.chat_bubble_rounded : Icons.chat_bubble_outline_rounded,
+                        label: 'Buyer Chat'.tr,
+                        isSelected: selectedIndex == 3,
+                        onTap: () => context.go('/artisan/chat'),
+                        badgeCount: unreadCount,
+                      ),
+                      // Earnings
+                      _buildNavItem(
+                        icon: selectedIndex == 4 ? Icons.account_balance_wallet_rounded : Icons.account_balance_wallet_outlined,
+                        label: 'Earnings'.tr,
+                        isSelected: selectedIndex == 4,
+                        onTap: () => context.go('/artisan/earnings'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    // On desktop/wide screens, present the app centered in a mobile viewport container
+    if (width > 520) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFEFE9E0),
+        body: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 480),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.symmetric(
+                vertical: BorderSide(color: AppColors.cardBorder.withValues(alpha: 0.8), width: 1),
+              ),
+            ),
+            child: buildShellContent(),
+          ),
+        ),
+      );
+    }
+
+    return buildShellContent();
   }
 
   Widget _buildNavItem({

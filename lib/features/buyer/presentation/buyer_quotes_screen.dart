@@ -88,8 +88,6 @@ class _BuyerQuotesScreenState extends State<BuyerQuotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 850;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AnimatedBuilder(
@@ -116,193 +114,70 @@ class _BuyerQuotesScreenState extends State<BuyerQuotesScreen> {
             orElse: () => threads.first,
           );
 
-          if (isDesktop) {
-            // DESKTOP SPLIT VIEW
-            return Row(
-              children: [
-                // Left Thread List
-                Container(
-                  width: 320,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(right: BorderSide(color: AppColors.cardBorder)),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+          return Column(
+            children: [
+              // Top Artisan Thread Strip
+              Container(
+                height: 54,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+                ),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: threads.length,
+                  separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
+                  itemBuilder: (ctx, idx) {
+                    final t = threads[idx];
+                    final isSelected = t.id == activeThread.id;
+                    return InkWell(
+                      onTap: () {
+                        setState(() => _selectedThreadId = t.id);
+                        ChatNegotiationService.instance.markAsRead(t.id, 'buyer');
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.terracotta : AppColors.background,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: isSelected ? AppColors.terracotta : AppColors.cardBorder),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.chat_bubble_rounded, color: AppColors.terracotta, size: 20),
-                            const SizedBox(width: 8),
-                            Text('Artisan Negotiations', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 15)),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppColors.terracottaLight, borderRadius: BorderRadius.circular(10)),
-                              child: Text('${threads.length}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.terracotta)),
+                            Text(
+                              t.artisanName,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                color: isSelected ? Colors.white : AppColors.textPrimary,
+                              ),
                             ),
+                            if (t.unreadCountBuyer > 0) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: threads.length,
-                          separatorBuilder: (ctx, idx) => const Divider(height: 1, color: AppColors.divider),
-                          itemBuilder: (ctx, idx) {
-                            final t = threads[idx];
-                            final isSelected = t.id == activeThread.id;
-                            return _buildThreadTile(t, isSelected);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-                // Right Chat Body
-                Expanded(
-                  child: _buildChatPanel(context, activeThread),
-                ),
-              ],
-            );
-          } else {
-            // MOBILE ADAPTIVE VIEW
-            return Column(
-              children: [
-                // Top Artisan Thread Strip
-                Container(
-                  height: 54,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
-                  ),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: threads.length,
-                    separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
-                    itemBuilder: (ctx, idx) {
-                      final t = threads[idx];
-                      final isSelected = t.id == activeThread.id;
-                      return InkWell(
-                        onTap: () {
-                          setState(() => _selectedThreadId = t.id);
-                          ChatNegotiationService.instance.markAsRead(t.id, 'buyer');
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.terracotta : AppColors.background,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: isSelected ? AppColors.terracotta : AppColors.cardBorder),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                t.artisanName,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                                ),
-                              ),
-                              if (t.unreadCountBuyer > 0) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Active Chat Body
-                Expanded(
-                  child: _buildChatPanel(context, activeThread),
-                ),
-              ],
-            );
-          }
+              ),
+              // Active Chat Body
+              Expanded(
+                child: _buildChatPanel(context, activeThread),
+              ),
+            ],
+          );
         },
       ),
-    );
-  }
-
-  Widget _buildThreadTile(ChatThread t, bool isSelected) {
-    return InkWell(
-      onTap: () {
-        setState(() => _selectedThreadId = t.id);
-        ChatNegotiationService.instance.markAsRead(t.id, 'buyer');
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        color: isSelected ? AppColors.terracottaLight.withValues(alpha: 0.4) : Colors.transparent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(t.artisanName, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 13, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-                _buildStatusPill(t.status),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(t.productTitle, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('₹${t.targetPricePerUnit.toStringAsFixed(0)}/u • ${t.requestedQuantity} pcs', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.tealDark)),
-                if (t.unreadCountBuyer > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: AppColors.terracotta, borderRadius: BorderRadius.circular(8)),
-                    child: Text('${t.unreadCountBuyer} new', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusPill(String status) {
-    Color bg = AppColors.background;
-    Color fg = AppColors.textSecondary;
-    String label = status.toUpperCase();
-
-    if (status == 'accepted') {
-      bg = AppColors.tealLight;
-      fg = AppColors.tealDark;
-      label = 'ACCEPTED';
-    } else if (status == 'countered') {
-      bg = const Color(0xFFFEF3C7);
-      fg = const Color(0xFF92400E);
-      label = 'COUNTER OFFER';
-    } else {
-      bg = const Color(0xFFEFF6FF);
-      fg = const Color(0xFF1D4ED8);
-      label = 'PENDING';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
-      child: Text(label, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: fg)),
     );
   }
 
@@ -476,7 +351,7 @@ class _BuyerQuotesScreenState extends State<BuyerQuotesScreen> {
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * (MediaQuery.of(context).size.width > 800 ? 0.6 : 0.82)),
+        constraints: const BoxConstraints(maxWidth: 320),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isMe ? AppColors.royalIndigo : AppColors.surface,

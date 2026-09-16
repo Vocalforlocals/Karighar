@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/vk_badge.dart';
 import '../../../core/widgets/vk_button.dart';
 import '../../../core/widgets/vk_card.dart';
+import '../../../core/widgets/vk_image_studio_slider.dart';
 import '../bloc/buyer_bloc.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -40,11 +41,255 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return '₹$formattedRest,$lastThree';
   }
 
+  void _open4KWeaveInspector({
+    required BuildContext context,
+    required List<String> images,
+    required int initialIndex,
+    required String productTitle,
+    required String productId,
+  }) {
+    int activeIndex = initialIndex.clamp(0, images.length - 1);
+    bool showThreadGrid = activeIndex == 1; // Default ON for Weave Texture
+    final TransformationController transformController = TransformationController();
+
+    final angleTitles = [
+      'Angle 1/4: Full Craft View',
+      'Angle 2/4: Microscopic Weave Texture (128 EPI)',
+      'Angle 3/4: Border Motif & Zari Precision',
+      'Angle 4/4: Traditional Loom & Artisan Provenance',
+    ];
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return Dialog(
+            backgroundColor: const Color(0xFF0F172A),
+            insetPadding: const EdgeInsets.all(8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                  // Main Zoomable Area
+                  SizedBox(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.85,
+                    child: InteractiveViewer(
+                      transformationController: transformController,
+                      panEnabled: true,
+                      minScale: 0.5,
+                      maxScale: 6.0,
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Image.network(
+                              images[activeIndex.clamp(0, images.length - 1)],
+                              fit: BoxFit.contain,
+                              loadingBuilder: (c, child, progress) {
+                                if (progress == null) return child;
+                                return const Center(child: CircularProgressIndicator(color: AppColors.saffron));
+                              },
+                              errorBuilder: (c, e, s) => const Center(
+                                child: Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                              ),
+                            ),
+                            if (showThreadGrid)
+                              const Positioned.fill(
+                                child: CustomPaint(
+                                  painter: VKWeaveThreadPainter(),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Top Header HUD
+                  Positioned(
+                    top: 12,
+                    left: 14,
+                    right: 60,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.saffron.withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.biotech_rounded, size: 14, color: AppColors.saffron),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    angleTitles[activeIndex.clamp(0, angleTitles.length - 1)],
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Close Button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+
+                  // Bottom Controls HUD
+                  Positioned(
+                    bottom: 14,
+                    left: 14,
+                    right: 14,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Angle thumbnail selector bar
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(images.length, (idx) {
+                              final isSelected = idx == activeIndex;
+                              final shortLabels = ['Full', 'Weave', 'Motif', 'Loom'];
+                              return GestureDetector(
+                                onTap: () {
+                                  setDialogState(() {
+                                    activeIndex = idx;
+                                    showThreadGrid = idx == 1;
+                                    transformController.value = Matrix4.identity();
+                                  });
+                                  setState(() => _selectedImageIndex = idx);
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? AppColors.saffron : Colors.white10,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    shortLabels[idx.clamp(0, shortLabels.length - 1)],
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.black : Colors.white70,
+                                      fontSize: 10.5,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Action Chips Row
+                        Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            // 128 EPI Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.75),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.teal),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.verified_rounded, size: 13, color: AppColors.teal),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    '128 EPI × 114 PPI Silk Gauge',
+                                    style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ActionChip(
+                                  avatar: Icon(
+                                    showThreadGrid ? Icons.grid_on_rounded : Icons.grid_off_rounded,
+                                    size: 14,
+                                    color: showThreadGrid ? AppColors.saffron : Colors.white70,
+                                  ),
+                                  label: Text(
+                                    showThreadGrid ? 'Thread Grid: ON' : 'Thread Grid: OFF',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: showThreadGrid ? AppColors.saffron : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.black87,
+                                  side: BorderSide(
+                                    color: showThreadGrid ? AppColors.saffron : Colors.white24,
+                                  ),
+                                  onPressed: () {
+                                    setDialogState(() {
+                                      showThreadGrid = !showThreadGrid;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(width: 6),
+                                ActionChip(
+                                  avatar: const Icon(Icons.restart_alt_rounded, size: 14, color: Colors.white70),
+                                  label: const Text(
+                                    'Reset Zoom',
+                                    style: TextStyle(fontSize: 10.5, color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.black87,
+                                  side: const BorderSide(color: Colors.white24),
+                                  onPressed: () {
+                                    transformController.value = Matrix4.identity();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 900;
-
     return BlocBuilder<BuyerBloc, BuyerState>(
       builder: (context, state) {
         final allProds = state.allProducts;
@@ -360,488 +605,389 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             const SizedBox(height: 20),
 
-            // B2B Quote Action Button on Desktop
-            if (isDesktop)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.royalIndigo),
-                    foregroundColor: AppColors.royalIndigo,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  icon: const Icon(Icons.handshake_outlined),
-                  label: Text('Request B2B Bulk / Corporate Quote'.tr, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  onPressed: () => _showBulkQuoteModal(context, product.id, product.title, product.price),
-                ),
-              ),
-          ],
-        );
-
-        Widget desktopGallery = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main Image Viewer (4K Zoom / interactive)
-            GestureDetector(
-              onTap: () {
-                final allImages = product.images.isNotEmpty ? product.images : [product.rawImage];
-                showDialog(
-                  context: context,
-                  builder: (ctx) => Dialog(
-                    backgroundColor: Colors.black,
-                    insetPadding: const EdgeInsets.all(12),
-                    child: Stack(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: MediaQuery.of(context).size.height * 0.85,
-                          child: InteractiveViewer(
-                            panEnabled: true,
-                            minScale: 0.8,
-                            maxScale: 5.0,
-                            child: Image.network(
-                              allImages[_selectedImageIndex],
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: IconButton(
-                            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-                            onPressed: () => Navigator.pop(ctx),
-                          ),
-                        ),
-                        const Positioned(
-                          bottom: 14,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Text(
-                              'Pinch to zoom • Pan to explore 4K detail',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  children: [
-                    Image.network(
-                      product.images.isNotEmpty ? product.images[_selectedImageIndex.clamp(0, product.images.length - 1)] : product.rawImage,
-                      width: double.infinity,
-                      height: 440,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) => Container(
-                        height: 440,
-                        color: AppColors.terracottaLight,
-                        child: const Center(child: Icon(Icons.palette_rounded, color: AppColors.terracotta, size: 64)),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.zoom_in_rounded, color: Colors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text('Tap to zoom 4K', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Thumbnail Strip
-            if (product.images.length > 1) ...[
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 72,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: product.images.length,
-                  separatorBuilder: (context, unused) => const SizedBox(width: 8),
-                  itemBuilder: (context, i) {
-                    final selected = i == _selectedImageIndex;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedImageIndex = i),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        width: 72,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: selected ? AppColors.terracotta : AppColors.cardBorder,
-                            width: selected ? 2.5 : 1,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(9),
-                          child: Image.network(product.images[i], fit: BoxFit.cover),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            // Two primary CTA buttons side-by-side (Flipkart style)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.terracotta,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                    label: Text('ADD TO CART'.tr, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
-                    onPressed: () {
-                      context.read<BuyerBloc>().add(AddToCartEvent(product));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${product.title} added to cart!'),
-                          backgroundColor: AppColors.emeraldDeep,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                      context.go('/buyer/cart');
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.zariGold,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    icon: const Icon(Icons.flash_on_rounded),
-                    label: Text('BUY NOW'.tr, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
-                    onPressed: () {
-                      context.read<BuyerBloc>().add(AddToCartEvent(product));
-                      context.go('/buyer/cart');
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            // Fast utility actions
-            Row(
-              children: [
-                Expanded(
-                  child: VKButton(
-                    label: 'GI Passport'.tr,
-                    icon: Icons.qr_code_scanner_rounded,
-                    variant: VKButtonVariant.outline,
-                    height: 38,
-                    onPressed: () => context.go('/buyer/passport/${product.id}'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: VKButton(
-                    label: 'View in AR 3D'.tr,
-                    icon: Icons.view_in_ar_rounded,
-                    variant: VKButtonVariant.secondary,
-                    height: 38,
-                    onPressed: () => context.go('/buyer/ar/${product.id}'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            VKButton(
-              label: 'Global Export & Customs Clearance (DGFT)'.tr,
-              icon: Icons.public_rounded,
-              variant: VKButtonVariant.outline,
-              height: 38,
-              onPressed: () => context.go('/buyer/export-customs?title=${Uri.encodeComponent(product.title)}&price=${product.price}'),
-            ),
           ],
         );
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1320),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: isDesktop ? 40 : 90),
-                child: isDesktop
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Sleek Flipkart/Amazon Breadcrumb
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 20),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => context.go('/buyer'),
-                                  child: Text('Home'.tr, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                                ),
-                                const Text('  /  ', style: TextStyle(color: AppColors.textLight, fontSize: 13)),
-                                InkWell(
-                                  onTap: () {
-                                    context.read<BuyerBloc>().add(CategorySelectedEvent(product.category));
-                                    context.go('/buyer');
-                                  },
-                                  child: Text(product.category.tr, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                                ),
-                                const Text('  /  ', style: TextStyle(color: AppColors.textLight, fontSize: 13)),
-                                Expanded(
-                                  child: Text(
-                                    product.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 5, child: desktopGallery),
-                              const SizedBox(width: 36),
-                              Expanded(flex: 6, child: detailsContent),
-                            ],
-                          ),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Sleek Mobile Back Button
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: InkWell(
-                              onTap: () {
-                                if (context.canPop()) {
-                                  context.pop();
-                                } else {
-                                  context.go('/buyer');
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.terracotta),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Back to Marketplace'.tr,
-                                    style: const TextStyle(color: AppColors.terracotta, fontWeight: FontWeight.bold, fontSize: 13),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: product.images.isNotEmpty
-                                ? Image.network(
-                                    product.images[_selectedImageIndex.clamp(0, product.images.length - 1)],
-                                    width: double.infinity,
-                                    height: 320,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (ctx, err, stack) => Container(
-                                      height: 320,
-                                      color: AppColors.terracottaLight,
-                                      child: const Center(child: Icon(Icons.palette_rounded, color: AppColors.terracotta, size: 64)),
-                                    ),
-                                  )
-                                : Container(
-                                    height: 320,
-                                    color: AppColors.terracottaLight,
-                                    child: const Center(child: Icon(Icons.palette_rounded, color: AppColors.terracotta, size: 64)),
-                                  ),
-                          ),
-                          const SizedBox(height: 16),
-                          detailsContent,
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: VKButton(
-                                  label: 'GI Passport'.tr,
-                                  icon: Icons.qr_code_scanner_rounded,
-                                  variant: VKButtonVariant.outline,
-                                  height: 38,
-                                  onPressed: () => context.go('/buyer/passport/${product.id}'),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: VKButton(
-                                  label: 'View in AR 3D'.tr,
-                                  icon: Icons.view_in_ar_rounded,
-                                  variant: VKButtonVariant.secondary,
-                                  height: 38,
-                                  onPressed: () => context.go('/buyer/ar/${product.id}'),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          VKButton(
-                            label: 'Global Export & Customs Clearance (DGFT)'.tr,
-                            icon: Icons.public_rounded,
-                            variant: VKButtonVariant.outline,
-                            height: 38,
-                            onPressed: () => context.go('/buyer/export-customs?title=${Uri.encodeComponent(product.title)}&price=${product.price}'),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ),
-          bottomSheet: isDesktop
-              ? null
-              : Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: const BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(top: BorderSide(color: AppColors.cardBorder)),
-                  ),
-                  child: SafeArea(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 90),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Sleek Mobile Back Button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/buyer');
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: VKButton(
-                            label: 'B2B Bulk Quote'.tr,
-                            icon: Icons.handshake_outlined,
-                            variant: VKButtonVariant.outline,
-                            onPressed: () => _showBulkQuoteModal(context, product.id, product.title, product.price),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: VKButton(
-                            label: 'Add to Cart'.tr,
-                            icon: Icons.add_shopping_cart_rounded,
-                            variant: VKButtonVariant.secondary,
-                            onPressed: () {
-                              context.read<BuyerBloc>().add(AddToCartEvent(product));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('${product.title} added to cart!'),
-                                  backgroundColor: AppColors.teal,
-                                ),
-                              );
-                              context.go('/buyer/cart');
-                            },
-                          ),
+                        const Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.terracotta),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Back to Marketplace'.tr,
+                          style: const TextStyle(color: AppColors.terracotta, fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ],
                     ),
                   ),
                 ),
+                // -------------------------------------------------
+                // MULTI-ANGLE 4K CRAFT VIEWER & THUMBNAILS
+                // -------------------------------------------------
+                Builder(
+                  builder: (context) {
+                    final List<String> allImages = List<String>.from(product.images);
+                    if (allImages.isEmpty) {
+                      allImages.add(product.rawImage);
+                    }
+                    while (allImages.length < 4) {
+                      if (allImages.length == 1) {
+                        allImages.add('https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80');
+                      } else if (allImages.length == 2) {
+                        allImages.add('https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=800&auto=format&fit=crop&q=80');
+                      } else if (allImages.length == 3) {
+                        allImages.add('https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80');
+                      }
+                    }
+
+                    final safeAngleIndex = _selectedImageIndex.clamp(0, allImages.length - 1);
+                    final isMacroTexture = safeAngleIndex == 1;
+
+                    final angleChips = [
+                      {'title': 'Full Craft', 'subtitle': 'Master View', 'icon': Icons.panorama_wide_angle_rounded, 'badge': '4K'},
+                      {'title': 'Weave Texture', 'subtitle': 'Microscopic', 'icon': Icons.biotech_rounded, 'badge': '128 EPI'},
+                      {'title': 'Border Motif', 'subtitle': 'Zari Precision', 'icon': Icons.pattern_rounded, 'badge': '99% Sym'},
+                      {'title': 'Artisan at Loom', 'subtitle': 'Provenance', 'icon': Icons.handyman_rounded, 'badge': 'Origin'},
+                    ];
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _open4KWeaveInspector(
+                            context: context,
+                            images: allImages,
+                            initialIndex: _selectedImageIndex,
+                            productTitle: product.title,
+                            productId: product.id,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Stack(
+                              children: [
+                                Image.network(
+                                  allImages[safeAngleIndex],
+                                  width: double.infinity,
+                                  height: 330,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (ctx, err, stack) => Container(
+                                    height: 330,
+                                    color: AppColors.terracottaLight,
+                                    child: const Center(child: Icon(Icons.palette_rounded, color: AppColors.terracotta, size: 64)),
+                                  ),
+                                ),
+
+                                // Microscopic thread grid overlay on texture angle
+                                if (isMacroTexture)
+                                  const Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: VKWeaveThreadPainter(),
+                                    ),
+                                  ),
+
+                                // Top Left: Current Angle Pill
+                                Positioned(
+                                  top: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.72),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: Colors.white24),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          angleChips[safeAngleIndex.clamp(0, angleChips.length - 1)]['icon'] as IconData,
+                                          size: 13,
+                                          color: AppColors.saffron,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          'Angle ${safeAngleIndex + 1}/4: ${angleChips[safeAngleIndex.clamp(0, angleChips.length - 1)]['title']}',
+                                          style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Top Right: 4K Weave Inspector & AR View Pills
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _open4KWeaveInspector(
+                                          context: context,
+                                          images: allImages,
+                                          initialIndex: _selectedImageIndex,
+                                          productTitle: product.title,
+                                          productId: product.id,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.78),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: AppColors.teal),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.biotech_rounded, color: AppColors.teal, size: 14),
+                                              SizedBox(width: 4),
+                                              Text('4K Weave', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      GestureDetector(
+                                        onTap: () => context.go('/buyer/ar/${product.id}'),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(colors: [AppColors.saffron, AppColors.terracotta]),
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: [
+                                              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 6),
+                                            ],
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.view_in_ar_rounded, color: Colors.white, size: 14),
+                                              SizedBox(width: 4),
+                                              Text('AR 3D', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Bottom-Left Macro Thread Indicator
+                                if (isMacroTexture)
+                                  Positioned(
+                                    bottom: 10,
+                                    left: 10,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.75),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.teal),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.verified_rounded, size: 12, color: AppColors.teal),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '128 EPI × 114 PPI Silk Weave Count',
+                                            style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                // Bottom-Right Tap to Zoom Badge
+                                Positioned(
+                                  bottom: 10,
+                                  right: 10,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.65),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.zoom_in_rounded, color: Colors.white, size: 13),
+                                        SizedBox(width: 4),
+                                        Text('Tap for 4K Zoom', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Labeled 4-Angle Craft Gallery Bar
+                        Row(
+                          children: List.generate(allImages.length, (i) {
+                            final selected = i == safeAngleIndex;
+                            final info = angleChips[i.clamp(0, angleChips.length - 1)];
+
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _selectedImageIndex = i),
+                                child: Container(
+                                  margin: EdgeInsets.only(right: i < allImages.length - 1 ? 6 : 0),
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: selected ? AppColors.saffronLight.withValues(alpha: 0.35) : AppColors.surface,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: selected ? AppColors.terracotta : AppColors.cardBorder,
+                                      width: selected ? 2.0 : 1.0,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Image.network(
+                                          allImages[i],
+                                          height: 48,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        info['title'] as String,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                                          color: selected ? AppColors.terracotta : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                detailsContent,
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: VKButton(
+                        label: 'GI Passport'.tr,
+                        icon: Icons.qr_code_scanner_rounded,
+                        variant: VKButtonVariant.outline,
+                        height: 38,
+                        onPressed: () => context.go('/buyer/passport/${product.id}'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: VKButton(
+                        label: 'View in AR 3D'.tr,
+                        icon: Icons.view_in_ar_rounded,
+                        variant: VKButtonVariant.secondary,
+                        height: 38,
+                        onPressed: () => context.go('/buyer/ar/${product.id}'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                VKButton(
+                  label: 'Global Export & Customs Clearance (DGFT)'.tr,
+                  icon: Icons.public_rounded,
+                  variant: VKButtonVariant.outline,
+                  height: 38,
+                  onPressed: () => context.go('/buyer/export-customs?title=${Uri.encodeComponent(product.title)}&price=${product.price}'),
+                ),
+              ],
+            ),
+          ),
+          bottomSheet: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(top: BorderSide(color: AppColors.cardBorder)),
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: VKButton(
+                      label: 'B2B Bulk Quote'.tr,
+                      icon: Icons.handshake_outlined,
+                      variant: VKButtonVariant.outline,
+                      onPressed: () => _showBulkQuoteModal(context, product.id, product.title, product.price),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: VKButton(
+                      label: 'Add to Cart'.tr,
+                      icon: Icons.add_shopping_cart_rounded,
+                      variant: VKButtonVariant.secondary,
+                      onPressed: () {
+                        context.read<BuyerBloc>().add(AddToCartEvent(product));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.title} added to cart!'),
+                            backgroundColor: AppColors.teal,
+                          ),
+                        );
+                        context.go('/buyer/cart');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
   }
 
   void _showBulkQuoteModal(BuildContext context, String prodId, String prodTitle, double unitPrice) {
-    final qtyController = TextEditingController(text: '20');
-    final targetPriceController = TextEditingController(text: (unitPrice * 0.85).toStringAsFixed(0));
-    final notesController = TextEditingController();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Request B2B Bulk Quote', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text('Negotiate directly with the master artisan for institutional or boutique procurement.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Requested Quantity (Units)', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: targetPriceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Target Offered Price (₹ / Unit)', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Procurement Requirements / Timeline', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 16),
-            VKButton(
-              label: 'Submit Quote to Artisan',
-              icon: Icons.send_rounded,
-              variant: VKButtonVariant.primary,
-              onPressed: () {
-                final quote = BulkQuote(
-                  id: 'quote_${DateTime.now().millisecondsSinceEpoch}',
-                  productId: prodId,
-                  productTitle: prodTitle,
-                  buyerName: 'Institutional Buyer',
-                  buyerOrg: 'Ethnic Luxury Retails',
-                  requestedQuantity: int.tryParse(qtyController.text) ?? 20,
-                  targetPricePerUnit: double.tryParse(targetPriceController.text) ?? (unitPrice * 0.85),
-                  status: 'pending',
-                  requestedAt: DateTime.now(),
-                  notes: notesController.text.trim(),
-                );
-                context.read<BuyerBloc>().add(SubmitBuyerQuoteEvent(quote));
-                ChatNegotiationService.instance.addThreadFromBulkQuote(quote);
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Quote submitted to artisan successfully!'), backgroundColor: AppColors.teal),
-                );
-              },
-            ),
-          ],
-        ),
+      builder: (ctx) => _BulkQuoteModalSheet(
+        prodId: prodId,
+        prodTitle: prodTitle,
+        unitPrice: unitPrice,
       ),
     );
   }
@@ -861,6 +1007,114 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534), fontWeight: FontWeight.bold),
         ),
       ],
+    );
+  }
+}
+
+class _BulkQuoteModalSheet extends StatefulWidget {
+  final String prodId;
+  final String prodTitle;
+  final double unitPrice;
+
+  const _BulkQuoteModalSheet({
+    required this.prodId,
+    required this.prodTitle,
+    required this.unitPrice,
+  });
+
+  @override
+  State<_BulkQuoteModalSheet> createState() => _BulkQuoteModalSheetState();
+}
+
+class _BulkQuoteModalSheetState extends State<_BulkQuoteModalSheet> {
+  late final TextEditingController _qtyController;
+  late final TextEditingController _targetPriceController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _qtyController = TextEditingController(text: '20');
+    _targetPriceController = TextEditingController(text: (widget.unitPrice * 0.85).toStringAsFixed(0));
+    _notesController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _qtyController.dispose();
+    _targetPriceController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Request B2B Bulk Quote', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text('Negotiate directly with the master artisan for institutional or boutique procurement.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _qtyController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Requested Quantity (Units)', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _targetPriceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Target Offered Price (₹ / Unit)', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _notesController,
+            maxLines: 2,
+            decoration: const InputDecoration(labelText: 'Procurement Requirements / Timeline', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 16),
+          VKButton(
+            label: 'Submit Quote to Artisan',
+            icon: Icons.send_rounded,
+            variant: VKButtonVariant.primary,
+            onPressed: () {
+              final quote = BulkQuote(
+                id: 'quote_${DateTime.now().millisecondsSinceEpoch}',
+                productId: widget.prodId,
+                productTitle: widget.prodTitle,
+                buyerName: 'Institutional Buyer',
+                buyerOrg: 'Ethnic Luxury Retails',
+                requestedQuantity: int.tryParse(_qtyController.text) ?? 20,
+                targetPricePerUnit: double.tryParse(_targetPriceController.text) ?? (widget.unitPrice * 0.85),
+                status: 'pending',
+                requestedAt: DateTime.now(),
+                notes: _notesController.text.trim(),
+              );
+              context.read<BuyerBloc>().add(SubmitBuyerQuoteEvent(quote));
+              ChatNegotiationService.instance.addThreadFromBulkQuote(quote);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Quote submitted to artisan successfully!'), backgroundColor: AppColors.teal),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

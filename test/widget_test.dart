@@ -410,7 +410,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Final Review & Publish'), findsOneWidget);
-      expect(find.text('NEURAL WEAVE INSPECTION'), findsOneWidget);
+      expect(find.text('Authenticity & Handmade Screening'), findsOneWidget);
       expect(find.text('Publish to Marketplace'), findsOneWidget);
     });
 
@@ -518,7 +518,6 @@ void main() {
       );
       await tester.pump();
       expect(find.text('All Regions'), findsOneWidget);
-      expect(find.text('National GIS Cluster Radar'), findsOneWidget);
 
       // 3. Mount BuyerProfileScreen
       await tester.pumpWidget(

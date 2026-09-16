@@ -79,7 +79,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
     _startCountdown();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('OTP sent to $phone. Use demo OTP: 7829'.tr),
+        content: Text('${'OTP sent to'.tr} $phone. ${'Use demo OTP: 7829'.tr}'),
         backgroundColor: AppColors.emeraldDeep,
       ),
     );
@@ -100,6 +100,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           return;
         }
         await ApiClient.verifyOtp(phone, otp);
+        if (!mounted) return;
       } else {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
@@ -115,6 +116,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           password: password,
           role: _selectedLoginRole,
         );
+        if (!mounted) return;
       }
 
       // If user selected role, ensure currentUser role reflects their choice

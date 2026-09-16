@@ -17,7 +17,7 @@ class MockRepository {
           'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&auto=format&fit=crop&q=80',
           'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=900&auto=format&fit=crop&q=80',
         ],
-        rawImage: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=900&auto=format&fit=crop&q=80',
+        rawImage: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&auto=format&fit=crop&q=80',
         price: 12999.00,
         estimatedHours: 128,
         isGICertified: true,
@@ -240,7 +240,7 @@ class MockRepository {
         description: 'Created on teakwood with Arabic gum chalk gesso, adorned with authentic Jaipur gems and embossed with pure 22-karat gold leaves.',
         images: [
           'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=900&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=900&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=900&auto=format&fit=crop&q=80',
         ],
         rawImage: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=900&auto=format&fit=crop&q=80',
         price: 15900.00,

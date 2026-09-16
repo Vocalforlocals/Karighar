@@ -22,6 +22,24 @@
 
   <title>Karighar — A Home for Artisans</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Instant Cache-Buster & Service Worker Purge -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      });
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (var i = 0; i < names.length; i++) {
+            caches.delete(names[i]);
+          }
+        });
+      }
+    }
+  </script>
 </head>
 <body style="margin: 0; background-color: #0F172A;">
   <script src="flutter_bootstrap.js" async></script>

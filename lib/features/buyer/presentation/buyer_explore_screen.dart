@@ -45,20 +45,12 @@ class _BuyerExploreScreenState extends State<BuyerExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 900;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: BlocBuilder<BuyerBloc, BuyerState>(
         builder: (context, state) {
           final products = state.filteredProducts;
-          final cols = screenWidth < 600 ? 2 : (screenWidth < 960 ? 3 : (screenWidth < 1280 ? 4 : 5));
-
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1320),
-              child: SingleChildScrollView(
+          return SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,25 +101,12 @@ class _BuyerExploreScreenState extends State<BuyerExploreScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Regional GI Filters + GIS Cluster Map Trigger
+                    // Regional GI Filters
                     SizedBox(
                       height: 38,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
-                          // Interactive GIS Radar Action Button
-                          ActionChip(
-                            avatar: const Icon(Icons.map_rounded, color: AppColors.emeraldDeep, size: 16),
-                            label: const Text(
-                              'National GIS Cluster Radar',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.emeraldDeep),
-                            ),
-                            backgroundColor: AppColors.emeraldDeep.withValues(alpha: 0.1),
-                            side: BorderSide(color: AppColors.emeraldDeep.withValues(alpha: 0.3)),
-                            onPressed: () => _showGisClusterMapModal(context),
-                          ),
-                          const SizedBox(width: 8),
-
                           // Region Choice Chips
                           ..._regions.map((region) {
                             final isSelected = _selectedRegion == region;
@@ -284,11 +263,11 @@ class _BuyerExploreScreenState extends State<BuyerExploreScreen> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: cols,
-                      childAspectRatio: isDesktop ? 0.62 : 0.53,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.54,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                     ),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
@@ -298,12 +277,10 @@ class _BuyerExploreScreenState extends State<BuyerExploreScreen> {
                   ),
               ],
             ),
-          ),
-        ),
-      );
-    },
-  ),
-);
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildExploreProductCard(BuildContext context, Product product) {
@@ -903,216 +880,6 @@ class _BuyerExploreScreenState extends State<BuyerExploreScreen> {
           child: Text(value, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
         ),
       ],
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // National GIS Craft Cluster Radar Modal (Google Maps Platform)
-  // ---------------------------------------------------------------------------
-  void _showGisClusterMapModal(BuildContext context) {
-    final List<Map<String, dynamic>> clusters = [
-      {
-        'name': 'Varanasi Brocade & Silk Cluster',
-        'state': 'Uttar Pradesh',
-        'lat': '25.3176° N',
-        'lng': '82.9739° E',
-        'artisans': 1240,
-        'gi': 'GI-AP-0028',
-        'search': 'Varanasi',
-        'specialty': 'Zari brocade, Katan silk, Pit loom weaving',
-      },
-      {
-        'name': 'Mithila / Madhubani Folk Art Hub',
-        'state': 'Bihar',
-        'lat': '26.3534° N',
-        'lng': '86.0717° E',
-        'artisans': 860,
-        'gi': 'GI-BH-0002',
-        'search': 'Madhubani',
-        'specialty': 'Kohbar, Kachni & Bharni natural pigment paintings',
-      },
-      {
-        'name': 'Jaipur Blue Pottery & Block Prints',
-        'state': 'Rajasthan',
-        'lat': '26.9124° N',
-        'lng': '75.7873° E',
-        'artisans': 2100,
-        'gi': 'GI-RJ-0034',
-        'search': 'Jaipur',
-        'specialty': 'Quartz clay pottery, Dabu mud-resist printing',
-      },
-      {
-        'name': 'Kashmir Valley Pashmina & Walnut Wood',
-        'state': 'Jammu & Kashmir',
-        'lat': '34.0837° N',
-        'lng': '74.7973° E',
-        'artisans': 950,
-        'gi': 'GI-JK-0046',
-        'search': 'Kashmir',
-        'specialty': 'Changthangi goat pashmina, Chinar carving',
-      },
-      {
-        'name': 'Channapatna Lacquer Toy Town',
-        'state': 'Karnataka',
-        'lat': '12.6518° N',
-        'lng': '77.2089° E',
-        'artisans': 620,
-        'gi': 'GI-KT-0012',
-        'search': 'Channapatna',
-        'specialty': 'Turned wood lacquercraft, natural dyes',
-      },
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.82,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10, bottom: 8),
-                  height: 4,
-                  width: 40,
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.emeraldDeep.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.radar_rounded, color: AppColors.emeraldDeep, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'National GIS Craft Cluster Radar',
-                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 15),
-                          ),
-                          const Text(
-                            'Google Maps GIS Platform • Real-time Artisan Geolocation',
-                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(sheetContext)),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: clusters.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final cluster = clusters[index];
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.cardBorder),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.royalIndigo.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  cluster['gi'] as String,
-                                  style: const TextStyle(color: AppColors.royalIndigo, fontWeight: FontWeight.bold, fontSize: 10),
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.emeraldDeep.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.people_alt_rounded, size: 12, color: AppColors.emeraldDeep),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${cluster['artisans']} Artisans Active',
-                                      style: const TextStyle(color: AppColors.emeraldDeep, fontWeight: FontWeight.bold, fontSize: 10.5),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            cluster['name'] as String,
-                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13.5),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${cluster['state']} • GPS: ${cluster['lat']}, ${cluster['lng']}',
-                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            cluster['specialty'] as String,
-                            style: const TextStyle(fontSize: 11, color: AppColors.terracotta, fontStyle: FontStyle.italic),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 36,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(sheetContext);
-                                final keyword = cluster['search'] as String;
-                                _searchController.text = keyword;
-                                context.read<BuyerBloc>().add(SearchQueryChangedEvent(keyword));
-                              },
-                              icon: const Icon(Icons.filter_alt_rounded, size: 16),
-                              label: Text('Filter Crafts from ${cluster['state']}'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.royalIndigo,
-                                side: const BorderSide(color: AppColors.royalIndigo),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

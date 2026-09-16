@@ -533,6 +533,301 @@ class LocaleManager {
   };
 
   static final Map<String, Map<AppLanguage, String>> _translations = {
+    'Select Language / भाषा चुनें': {
+      AppLanguage.english: 'Select Language / भाषा चुनें',
+      AppLanguage.hindi: 'भाषा चुनें',
+      AppLanguage.tamil: 'மொழியைத் தேர்ந்தெடுக்கவும்',
+    },
+    'MACRO WEAVE TARGET (10cm)': {
+      AppLanguage.english: 'MACRO WEAVE TARGET (10cm)',
+      AppLanguage.hindi: 'मैक्रो वीव लक्ष्य (10 सेमी)',
+      AppLanguage.tamil: 'மேக்ரோ நெசவு இலக்கு (10 செ.மீ)',
+    },
+    'Use Sample Craft Photo': {
+      AppLanguage.english: 'Use Sample Craft Photo',
+      AppLanguage.hindi: 'नमूना शिल्प फोटो उपयोग करें',
+      AppLanguage.tamil: 'மாதிரி கைவினை புகைப்படத்தைப் பயன்படுத்தவும்',
+    },
+    'Hold steady and align craft inside the guideline frame': {
+      AppLanguage.english: 'Hold steady and align craft inside the guideline frame',
+      AppLanguage.hindi: 'स्थिर रखें और शिल्प को दिशानिर्देश फ्रेम के अंदर संरेखित करें',
+      AppLanguage.tamil: 'வழிகாட்டுதல் சட்டத்திற்குள் கைவினைப்பொருளை சீரமைக்கவும்',
+    },
+    'No buyer negotiations yet': {
+      AppLanguage.english: 'No buyer negotiations yet',
+      AppLanguage.hindi: 'अभी तक कोई खरीदार बातचीत नहीं',
+      AppLanguage.tamil: 'இன்னும் வாங்குபவர் பேச்சுவார்த்தைகள் இல்லை',
+    },
+    'Type reply or negotiate...': {
+      AppLanguage.english: 'Type reply or negotiate...',
+      AppLanguage.hindi: 'उत्तर टाइप करें या बातचीत करें...',
+      AppLanguage.tamil: 'பதிலை உள்ளிடவும் அல்லது பேச்சுவார்த்தை நடத்தவும்...',
+    },
+    'Buyer Shop': {
+      AppLanguage.english: 'Buyer Shop',
+      AppLanguage.hindi: 'खरीदार बाज़ार',
+      AppLanguage.tamil: 'வாங்குபவர் அங்காடி',
+    },
+    'Artisan Account': {
+      AppLanguage.english: 'Artisan Account',
+      AppLanguage.hindi: 'कारीगर खाता',
+      AppLanguage.tamil: 'கைவினைஞர் கணக்கு',
+    },
+    'Logged out of Artisan Studio': {
+      AppLanguage.english: 'Logged out of Artisan Studio',
+      AppLanguage.hindi: 'कारीगर स्टूडियो से लॉग आउट किया गया',
+      AppLanguage.tamil: 'கைவினைஞர் ஸ்டுடியோவிலிருந்து வெளியேற்றப்பட்டது',
+    },
+    'View Buyer Marketplace': {
+      AppLanguage.english: 'View Buyer Marketplace',
+      AppLanguage.hindi: 'खरीदार बाज़ार देखें',
+      AppLanguage.tamil: 'வாங்குபவர் சந்தையைக் காண்க',
+    },
+    'Log Out': {
+      AppLanguage.english: 'Log Out',
+      AppLanguage.hindi: 'लॉग आउट',
+      AppLanguage.tamil: 'வெளியேறு',
+    },
+    'Add Craft (AI Studio)': {
+      AppLanguage.english: 'Add Craft (AI Studio)',
+      AppLanguage.hindi: 'शिल्प जोड़ें (एआई स्टूडियो)',
+      AppLanguage.tamil: 'கைவினைச் சேர் (AI ஸ்டுடியோ)',
+    },
+    'Buyer Chat': {
+      AppLanguage.english: 'Buyer Chat',
+      AppLanguage.hindi: 'खरीदार चैट',
+      AppLanguage.tamil: 'வாங்குபவர் அரட்டை',
+    },
+    'Quick Actions': {
+      AppLanguage.english: 'Quick Actions',
+      AppLanguage.hindi: 'त्वरित क्रियाएँ',
+      AppLanguage.tamil: 'விரைவு நடவடிக்கைகள்',
+    },
+    'Add Product': {
+      AppLanguage.english: 'Add Product',
+      AppLanguage.hindi: 'उत्पाद जोड़ें',
+      AppLanguage.tamil: 'பொருளைச் சேர்',
+    },
+    'Switch Mode': {
+      AppLanguage.english: 'Switch Mode',
+      AppLanguage.hindi: 'मोड बदलें',
+      AppLanguage.tamil: 'பயன்முறையை மாற்று',
+    },
+    'Setu Didi': {
+      AppLanguage.english: 'Setu Didi',
+      AppLanguage.hindi: 'सेतु दीदी',
+      AppLanguage.tamil: 'சேது தீதி',
+    },
+    'Voice AI': {
+      AppLanguage.english: 'Voice AI',
+      AppLanguage.hindi: 'आवाज़ एआई',
+      AppLanguage.tamil: 'குரல் AI',
+    },
+    'B2B Orders': {
+      AppLanguage.english: 'B2B Orders',
+      AppLanguage.hindi: 'बी2बी थोक ऑर्डर',
+      AppLanguage.tamil: 'B2B ஆர்டர்கள்',
+    },
+    'Cluster Order Pooling': {
+      AppLanguage.english: 'Cluster Order Pooling',
+      AppLanguage.hindi: 'क्लस्टर ऑर्डर पूलिंग',
+      AppLanguage.tamil: 'கிளஸ்டர் ஆர்டர் பூலிங்',
+    },
+    'Karighar Credit Financial Hub': {
+      AppLanguage.english: 'Karighar Credit Financial Hub',
+      AppLanguage.hindi: 'कारीघर क्रेडिट वित्तीय हब',
+      AppLanguage.tamil: 'காரிகர் கடன் நிதி மையம்',
+    },
+    'रोकें': {
+      AppLanguage.english: 'Stop',
+      AppLanguage.hindi: 'रोकें',
+      AppLanguage.tamil: 'நிறுத்து',
+    },
+    'जवाब दें': {
+      AppLanguage.english: 'Reply',
+      AppLanguage.hindi: 'जवाब दें',
+      AppLanguage.tamil: 'பதிலளிக்கவும்',
+    },
+    'Search GI crafts, artisan clusters, materials...': {
+      AppLanguage.english: 'Search GI crafts, artisan clusters, materials...',
+      AppLanguage.hindi: 'जीआई शिल्प, कारीगर क्लस्टर, सामग्री खोजें...',
+      AppLanguage.tamil: 'ஜிஐ கைவினைப்பொருட்கள், கைவினைஞர் குழுக்கள், பொருட்களைத் தேடுங்கள்...',
+    },
+    '100% Certified GI • Direct DBT Bank Rails': {
+      AppLanguage.english: '100% Certified GI • Direct DBT Bank Rails',
+      AppLanguage.hindi: '100% प्रमाणित जीआई • सीधा डीबीटी बैंक खाता',
+      AppLanguage.tamil: '100% சான்றளிக்கப்பட்ட GI • நேரடி DBT வங்கி பரிமாற்றம்',
+    },
+    'No Handcrafted Treasures Found': {
+      AppLanguage.english: 'No Handcrafted Treasures Found',
+      AppLanguage.hindi: 'कोई हस्तशिल्प नहीं मिला',
+      AppLanguage.tamil: 'கைவினைப் பொக்கிஷங்கள் எதுவும் கிடைக்கவில்லை',
+    },
+    'Try adjusting or resetting your category, state, or price filters.': {
+      AppLanguage.english: 'Try adjusting or resetting your category, state, or price filters.',
+      AppLanguage.hindi: 'कृपया अपनी श्रेणी, राज्य या मूल्य फ़िल्टर समायोजित करें।',
+      AppLanguage.tamil: 'உங்கள் வகை, மாநிலம் அல்லது விலை வடிப்பான்களை சரிசெய்யவும்.',
+    },
+    'OTP sent to': {
+      AppLanguage.english: 'OTP sent to',
+      AppLanguage.hindi: 'ओटीपी भेजा गया:',
+      AppLanguage.tamil: 'OTP அனுப்பப்பட்டது:',
+    },
+    'Use demo OTP: 7829': {
+      AppLanguage.english: 'Use demo OTP: 7829',
+      AppLanguage.hindi: 'डेमो ओटीपी का उपयोग करें: 7829',
+      AppLanguage.tamil: 'டெமோ OTP பயன்படுத்தவும்: 7829',
+    },
+    'Please enter email and password': {
+      AppLanguage.english: 'Please enter email and password',
+      AppLanguage.hindi: 'कृपया ईमेल और पासवर्ड दर्ज करें',
+      AppLanguage.tamil: 'மின்னஞ்சல் மற்றும் கடவுச்சொல்லை உள்ளிடவும்',
+    },
+    'Logged in as Master Artisan Seller! Opening Studio...': {
+      AppLanguage.english: 'Logged in as Master Artisan Seller! Opening Studio...',
+      AppLanguage.hindi: 'मास्टर कारीगर विक्रेता के रूप में लॉग इन! स्टूडियो खुल रहा है...',
+      AppLanguage.tamil: 'மாஸ்டர் கைவினைஞராக உள்நுழைந்துள்ளார்! ஸ்டுடியோ திறக்கப்படுகிறது...',
+    },
+    'Welcome back to Karighar Marketplace!': {
+      AppLanguage.english: 'Welcome back to Karighar Marketplace!',
+      AppLanguage.hindi: 'कारीघर मार्केटप्लेस में आपका पुनः स्वागत है!',
+      AppLanguage.tamil: 'காரிகர் சந்தைக்கு மீண்டும் வருக!',
+    },
+    'Logged in as Master Artisan Seller! Welcome to Studio.': {
+      AppLanguage.english: 'Logged in as Master Artisan Seller! Welcome to Studio.',
+      AppLanguage.hindi: 'मास्टर कारीगर के रूप में लॉग इन! स्टूडियो में आपका स्वागत है।',
+      AppLanguage.tamil: 'மாஸ்டர் கைவினைஞராக உள்நுழைந்துள்ளார்! ஸ்டுடியோவிற்கு வரவேற்கிறோம்.',
+    },
+    'Logged in as Verified Buyer! Welcome back.': {
+      AppLanguage.english: 'Logged in as Verified Buyer! Welcome back.',
+      AppLanguage.hindi: 'सत्यापित खरीदार के रूप में लॉग इन! आपका स्वागत है।',
+      AppLanguage.tamil: 'சரிபார்க்கப்பட்ட வாங்குபவராக உள்நுழைந்துள்ளார்! மீண்டும் வருக.',
+    },
+    'Logged out successfully. Please select role to log in again.': {
+      AppLanguage.english: 'Logged out successfully. Please select role to log in again.',
+      AppLanguage.hindi: 'सफलतापूर्वक लॉग आउट हो गया। दोबारा लॉग इन करने के लिए भूमिका चुनें।',
+      AppLanguage.tamil: 'வெற்றிகரமாக வெளியேறியது. மீண்டும் உள்நுழைய தேர்வு செய்யவும்.',
+    },
+    'Welcome to Karighar': {
+      AppLanguage.english: 'Welcome to Karighar',
+      AppLanguage.hindi: 'कारीघर में आपका स्वागत है',
+      AppLanguage.tamil: 'காரிகருக்கு வரவேற்கிறோம்',
+    },
+    'Sign in to access your direct artisan orders or seller studio': {
+      AppLanguage.english: 'Sign in to access your direct artisan orders or seller studio',
+      AppLanguage.hindi: 'सीधे कारीगर ऑर्डर या विक्रेता स्टूडियो तक पहुँचने के लिए साइन इन करें',
+      AppLanguage.tamil: 'உங்கள் நேரடி கைவினைஞர் ஆர்டர்கள் அல்லது ஸ்டுடியோவை அணுக உள்நுழையவும்',
+    },
+    'How would you like to log in?': {
+      AppLanguage.english: 'How would you like to log in?',
+      AppLanguage.hindi: 'आप कैसे लॉग इन करना चाहते हैं?',
+      AppLanguage.tamil: 'நீங்கள் எவ்வாறு உள்நுழைய விரும்புகிறீர்கள்?',
+    },
+    'Select whether you are buying crafts or selling as an artisan': {
+      AppLanguage.english: 'Select whether you are buying crafts or selling as an artisan',
+      AppLanguage.hindi: 'चुनें कि क्या आप शिल्प खरीद रहे हैं या कारीगर के रूप में बेच रहे हैं',
+      AppLanguage.tamil: 'கைவினைப்பொருட்களை வாங்குகிறீர்களா அல்லது விற்கிறீர்களா என்பதைத் தேர்ந்தெடுக்கவும்',
+    },
+    'Login as Buyer': {
+      AppLanguage.english: 'Login as Buyer',
+      AppLanguage.hindi: 'खरीदार के रूप में लॉग इन करें',
+      AppLanguage.tamil: 'வாங்குபவராக உள்நுழையவும்',
+    },
+    'Shop GI handlooms, track orders & verified escrow': {
+      AppLanguage.english: 'Shop GI handlooms, track orders & verified escrow',
+      AppLanguage.hindi: 'जीआई हथकरघा खरीदें, ऑर्डर ट्रैक करें और सुरक्षित एस्क्रो',
+      AppLanguage.tamil: 'ஜிஐ கைத்தறி வாங்கவும், ஆர்டர்களைக் கண்காணிக்கவும் மற்றும் எஸ்க்ரோ',
+    },
+    'Login as Seller': {
+      AppLanguage.english: 'Login as Seller',
+      AppLanguage.hindi: 'विक्रेता के रूप में लॉग इन करें',
+      AppLanguage.tamil: 'விற்பனையாளராக உள்நுழையவும்',
+    },
+    'Studio cataloging, orders & 100% direct DBT bank rails': {
+      AppLanguage.english: 'Studio cataloging, orders & 100% direct DBT bank rails',
+      AppLanguage.hindi: 'स्टूडियो कैटलॉगिंग, ऑर्डर और 100% सीधा बैंक डीबीटी',
+      AppLanguage.tamil: 'ஸ்டுடியோ பட்டியல், ஆர்டர்கள் மற்றும் நேரடி வங்கி DBT',
+    },
+    '4-Digit OTP': {
+      AppLanguage.english: '4-Digit OTP',
+      AppLanguage.hindi: '4-अंकीय ओटीपी',
+      AppLanguage.tamil: '4 இலக்க OTP',
+    },
+    '⚡ 1-Tap Quick Login as Buyer (FabIndia)': {
+      AppLanguage.english: '⚡ 1-Tap Quick Login as Buyer (FabIndia)',
+      AppLanguage.hindi: '⚡ 1-टैप खरीदार के रूप में लॉगिन (FabIndia)',
+      AppLanguage.tamil: '⚡ 1-தட்டல் வாங்குபவராக விரைவு உள்நுழைவு (FabIndia)',
+    },
+    '⚡ 1-Tap Quick Login as Seller (Ramdev)': {
+      AppLanguage.english: '⚡ 1-Tap Quick Login as Seller (Ramdev)',
+      AppLanguage.hindi: '⚡ 1-टैप विक्रेता के रूप में लॉगिन (रामदेव)',
+      AppLanguage.tamil: '⚡ 1-தட்டல் விற்பனையாளராக விரைவு உள்நுழைவு (ராம்தேவ்)',
+    },
+    'Currently in Seller Mode': {
+      AppLanguage.english: 'Currently in Seller Mode',
+      AppLanguage.hindi: 'वर्तमान में विक्रेता मोड में',
+      AppLanguage.tamil: 'தற்போது விற்பனையாளர் பயன்முறையில்',
+    },
+    'Want to Sell as an Artisan?': {
+      AppLanguage.english: 'Want to Sell as an Artisan?',
+      AppLanguage.hindi: 'क्या आप कारीगर के रूप में बेचना चाहते हैं?',
+      AppLanguage.tamil: 'கைவினைஞராக விற்க விரும்புகிறீர்களா?',
+    },
+    'Manage craft catalog, orders, and DBT in Studio': {
+      AppLanguage.english: 'Manage craft catalog, orders, and DBT in Studio',
+      AppLanguage.hindi: 'स्टूडियो में शिल्प सूची, ऑर्डर और डीबीटी प्रबंधित करें',
+      AppLanguage.tamil: 'ஸ்டுடியோவில் கைவினை பட்டியல், ஆர்டர்கள் மற்றும் DBT ஐ நிர்வகிக்கவும்',
+    },
+    'Open your Artisan Studio to sell crafts with AI photo studio': {
+      AppLanguage.english: 'Open your Artisan Studio to sell crafts with AI photo studio',
+      AppLanguage.hindi: 'एआई फोटो स्टूडियो के साथ शिल्प बेचने के लिए कारीगर स्टूडियो खोलें',
+      AppLanguage.tamil: 'AI புகைப்பட ஸ்டுடியோவுடன் கைவினைப்பொருட்களை விற்க உங்கள் ஸ்டுடியோவைத் திறக்கவும்',
+    },
+    'Seller Studio': {
+      AppLanguage.english: 'Seller Studio',
+      AppLanguage.hindi: 'विक्रेता स्टूडियो',
+      AppLanguage.tamil: 'விற்பனையாளர் ஸ்டுடியோ',
+    },
+    'Artisan Chat & Direct Negotiations': {
+      AppLanguage.english: 'Artisan Chat & Direct Negotiations',
+      AppLanguage.hindi: 'कारीगर चैट और सीधी बातचीत',
+      AppLanguage.tamil: 'கைவினைஞர் அரட்டை மற்றும் நேரடி பேச்சுவார்த்தை',
+    },
+    'Log Out / Switch Account': {
+      AppLanguage.english: 'Log Out / Switch Account',
+      AppLanguage.hindi: 'लॉग आउट / खाता बदलें',
+      AppLanguage.tamil: 'வெளியேறு / கணக்கை மாற்று',
+    },
+    'Switch between Buyer and Seller accounts': {
+      AppLanguage.english: 'Switch between Buyer and Seller accounts',
+      AppLanguage.hindi: 'खरीदार और विक्रेता खातों के बीच स्विच करें',
+      AppLanguage.tamil: 'வாங்குபவர் மற்றும் விற்பனையாளர் கணக்குகளுக்கு இடையே மாறவும்',
+    },
+    'No active artisan chats yet': {
+      AppLanguage.english: 'No active artisan chats yet',
+      AppLanguage.hindi: 'अभी तक कोई सक्रिय कारीगर चैट नहीं',
+      AppLanguage.tamil: 'செயலில் உள்ள கைவினைஞர் அரட்டைகள் எதுவும் இல்லை',
+    },
+    'Type message to artisan...': {
+      AppLanguage.english: 'Type message to artisan...',
+      AppLanguage.hindi: 'कारीगर को संदेश लिखें...',
+      AppLanguage.tamil: 'கைவினைஞருக்கு செய்தி எழுதவும்...',
+    },
+    'Artisan Chat': {
+      AppLanguage.english: 'Artisan Chat',
+      AppLanguage.hindi: 'कारीगर चैट',
+      AppLanguage.tamil: 'கைவினைஞர் அரட்டை',
+    },
+    'Bhashini Voice Search': {
+      AppLanguage.english: 'Bhashini Voice Search',
+      AppLanguage.hindi: 'भाषिणी आवाज़ खोज',
+      AppLanguage.tamil: 'பாஷினி குரல் தேடல்',
+    },
+    'Price': {
+      AppLanguage.english: 'Price',
+      AppLanguage.hindi: 'मूल्य',
+      AppLanguage.tamil: 'விலை',
+    },
     // Top-level & Navigation
     'app_title': {
       AppLanguage.english: 'KARIGHAR',
