@@ -12,12 +12,7 @@ class ApiClient {
   static UserModel? currentUser;
 
   static String get baseUrl {
-    if (kIsWeb) {
-      // In web browser, relative URLs automatically inherit https:// from the origin
-      return '';
-    }
-    // On physical mobile device, connect to secure HTTPS endpoint on workstation LAN IP
-    return 'https://10.63.63.42:8443';
+    return 'https://karighar.up.railway.app';
   }
 
   static const Map<String, String> _headers = {

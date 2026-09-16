@@ -20,3 +20,5 @@ load-test.js
 load_test/
 docs/
 test/
+certs/
+build/web/shilpsetu.apk

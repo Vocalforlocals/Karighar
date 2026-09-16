@@ -338,10 +338,16 @@ if (require.main === module) {
     }
   }
 
-  if (httpsServer) {
-    httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
-      console.log(`🔒 HTTPS Server running on port ${HTTPS_PORT}`);
-    });
+  if (httpsServer && HTTPS_PORT !== HTTP_PORT) {
+    try {
+      httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+        console.log(`🔒 HTTPS Server running on port ${HTTPS_PORT}`);
+      }).on('error', (err) => {
+        console.warn(`[HTTPS NOTICE] HTTPS listener on :${HTTPS_PORT} skipped (${err.message}). Cloud edge proxy handles TLS.`);
+      });
+    } catch (e) {
+      console.warn(`[HTTPS NOTICE] HTTPS listener skipped: ${e.message}`);
+    }
   }
 
   httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
